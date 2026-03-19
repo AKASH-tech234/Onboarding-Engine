@@ -1,0 +1,48 @@
+{
+  "success": true,
+  "candidate": {
+    "name": "Priya Sharma",
+    "current_role": "Junior Frontend Developer",
+    "experience_years": 2,
+    "identified_skills": [
+      { "name": "JavaScript", "level": "intermediate", "confidence": "high" },
+      { "name": "React", "level": "beginner", "confidence": "high" },
+      { "name": "HTML", "level": "expert", "confidence": "high" },
+      { "name": "CSS", "level": "expert", "confidence": "high" },
+      { "name": "Git", "level": "intermediate", "confidence": "high" }
+    ]
+  },
+  "target_role": "Full Stack Engineer",
+  "required_skills": [
+    { "name": "Node.js", "level": "intermediate", "weight": 1.0, "is_mandatory": true, "confidence": "high" },
+    { "name": "PostgreSQL", "level": "intermediate", "weight": 1.0, "is_mandatory": true, "confidence": "high" },
+    { "name": "Docker", "level": "intermediate", "weight": 0.9, "is_mandatory": true, "confidence": "high" },
+    { "name": "REST APIs", "level": "intermediate", "weight": 1.0, "is_mandatory": true, "confidence": "high" },
+    { "name": "TypeScript", "level": "intermediate", "weight": 0.8, "is_mandatory": false, "confidence": "high" },
+    { "name": "CI/CD", "level": "beginner", "weight": 0.7, "is_mandatory": false, "confidence": "high" }
+  ],
+  "skill_gaps": [
+    { "skill": "Node.js", "type": "missing", "required_level": "intermediate", "current_level": null, "priority": 1.0, "is_mandatory": true },
+    { "skill": "PostgreSQL", "type": "missing", "required_level": "intermediate", "current_level": null, "priority": 1.0, "is_mandatory": true },
+    { "skill": "REST APIs", "type": "missing", "required_level": "intermediate", "current_level": null, "priority": 1.0, "is_mandatory": true },
+    { "skill": "Docker", "type": "missing", "required_level": "intermediate", "current_level": null, "priority": 0.9, "is_mandatory": true },
+    { "skill": "TypeScript", "type": "missing", "required_level": "intermediate", "current_level": null, "priority": 0.8, "is_mandatory": false },
+    { "skill": "React", "type": "level_upgrade", "required_level": "intermediate", "current_level": "beginner", "priority": 0.75, "is_mandatory": true },
+    { "skill": "CI/CD", "type": "missing", "required_level": "beginner", "current_level": null, "priority": 0.7, "is_mandatory": false }
+  ],
+  "learning_path": [
+    { "order": 1, "course_id": "C003", "title": "JavaScript Essentials", "category": "Software", "level": "beginner", "duration_hrs": 8, "skills_taught": ["JavaScript", "ES6", "DOM"], "is_prerequisite": true, "reason": "Required prerequisite for subsequent courses in your path" },
+    { "order": 2, "course_id": "C004", "title": "React.js & Modern Frontend", "category": "Software", "level": "intermediate", "duration_hrs": 12, "skills_taught": ["React", "JSX", "Hooks", "State Management"], "is_prerequisite": false, "reason": "Directly addresses your identified gap in: React" },
+    { "order": 3, "course_id": "C005", "title": "Node.js & Express Backend", "category": "Software", "level": "intermediate", "duration_hrs": 10, "skills_taught": ["Node.js", "Express", "REST APIs", "Middleware"], "is_prerequisite": false, "reason": "Directly addresses your identified gap in: Node.js, REST APIs" },
+    { "order": 4, "course_id": "C006", "title": "TypeScript Deep Dive", "category": "Software", "level": "intermediate", "duration_hrs": 8, "skills_taught": ["TypeScript", "Type Safety", "Generics", "Interfaces"], "is_prerequisite": false, "reason": "Directly addresses your identified gap in: TypeScript" },
+    { "order": 5, "course_id": "C016", "title": "SQL & Relational Databases", "category": "Data", "level": "beginner", "duration_hrs": 8, "skills_taught": ["SQL", "PostgreSQL", "MySQL", "Database Design", "Joins"], "is_prerequisite": true, "reason": "Required prerequisite for PostgreSQL Advanced Concepts" },
+    { "order": 6, "course_id": "C017", "title": "PostgreSQL Advanced Concepts", "category": "Data", "level": "intermediate", "duration_hrs": 8, "skills_taught": ["PostgreSQL", "Indexing", "Query Optimization", "Transactions"], "is_prerequisite": false, "reason": "Directly addresses your identified gap in: PostgreSQL" },
+    { "order": 7, "course_id": "C009", "title": "Linux Command Line Fundamentals", "category": "DevOps", "level": "beginner", "duration_hrs": 6, "skills_taught": ["Linux", "Bash", "Shell Scripting", "File Systems"], "is_prerequisite": true, "reason": "Required prerequisite for Docker & Containerization" },
+    { "order": 8, "course_id": "C010", "title": "Networking Fundamentals", "category": "DevOps", "level": "beginner", "duration_hrs": 6, "skills_taught": ["TCP/IP", "DNS", "HTTP", "Networking Protocols"], "is_prerequisite": true, "reason": "Required prerequisite for Docker & Containerization" },
+    { "order": 9, "course_id": "C011", "title": "Docker & Containerization", "category": "DevOps", "level": "intermediate", "duration_hrs": 8, "skills_taught": ["Docker", "Containers", "Docker Compose", "Dockerfiles"], "is_prerequisite": false, "reason": "Directly addresses your identified gap in: Docker" },
+    { "order": 10, "course_id": "C013", "title": "CI/CD with GitHub Actions", "category": "DevOps", "level": "intermediate", "duration_hrs": 8, "skills_taught": ["CI/CD", "GitHub Actions", "Automation", "Pipelines"], "is_prerequisite": false, "reason": "Directly addresses your identified gap in: CI/CD" }
+  ],
+  "reasoning_trace": "Priya brings solid frontend foundations in JavaScript, HTML, CSS, and Git, but the Full Stack Engineer role requires backend and infrastructure skills she hasn't yet developed. The path begins by deepening her React skills to the intermediate level required, then introduces Node.js and REST API design — the highest-priority gaps identified from the job description. Database skills follow with SQL fundamentals leading into PostgreSQL, and the path concludes with Linux, Docker, and CI/CD to round out her DevOps readiness. This sequencing ensures every prerequisite is met before each advanced module.",
+  "total_training_hours": 82,
+  "estimated_weeks": 8.2
+}

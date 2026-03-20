@@ -2,6 +2,11 @@
 
 from __future__ import annotations
 
+from utils.logger import get_logger
+
+
+logger = get_logger("scoring")
+
 
 def _to_level(score: float) -> str:
 	if score < 0.4:
@@ -12,6 +17,8 @@ def _to_level(score: float) -> str:
 
 
 def compute_proficiency(skills: dict) -> dict:
+	logger.debug("Scoring input: %s", skills)
+
 	if not isinstance(skills, dict):
 		raise ValueError("skills must be a dictionary")
 
@@ -42,6 +49,13 @@ def compute_proficiency(skills: dict) -> dict:
 		updated = dict(payload)
 		updated["score"] = score
 		updated["level"] = _to_level(score)
+		logger.debug(
+			"Score for %s -> %.2f (level=%s)",
+			name,
+			score,
+			updated["level"],
+		)
 		result[name] = updated
 
+	logger.debug("Scoring output: %s", result)
 	return result

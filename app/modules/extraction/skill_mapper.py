@@ -5,6 +5,8 @@ from __future__ import annotations
 import re
 from collections import defaultdict
 
+from utils.logger import get_logger
+
 
 VARIANT_TO_CANONICAL = {
 	"nodejs": "node.js",
@@ -45,6 +47,9 @@ RANGE_PATTERN = re.compile(
 )
 
 
+logger = get_logger("mapper")
+
+
 def _empty_skill_record(name: str, listed: bool) -> dict:
 	return {
 		"name": name,
@@ -53,6 +58,26 @@ def _empty_skill_record(name: str, listed: bool) -> dict:
 		"experience_months": 0,
 		"evidence": [],
 	}
+
+
+def _normalize_skill_name(skill: str) -> str:
+	if not isinstance(skill, str):
+		return ""
+	normalized = skill.strip().lower()
+	if normalized == "":
+		return ""
+	return VARIANT_TO_CANONICAL.get(normalized, normalized)
+
+
+def _append_evidence(record: dict, evidence_item: str) -> None:
+	if not isinstance(evidence_item, str) or evidence_item == "":
+		return
+	evidence = record.setdefault("evidence", [])
+	if not isinstance(evidence, list):
+		record["evidence"] = []
+		evidence = record["evidence"]
+	if evidence_item not in evidence:
+		evidence.append(evidence_item)
 
 
 def _count_non_overlapping_mentions(text: str, aliases: set[str]) -> int:
@@ -113,9 +138,17 @@ def _build_alias_index(listed_skills: list[str]) -> dict[str, set[str]]:
 
 
 def map_skills(data: dict) -> dict:
+	logger.debug("Mapper input: %s", data)
+
 	listed_skills = data.get("skills", [])
 	projects = data.get("projects", [])
 	experience = data.get("experience", [])
+	skill_sources = data.get("skill_sources", {})
+	training_skills = data.get("training_skills", [])
+	project_technology_skills = data.get("project_technology_skills", [])
+	raw_technical_skills = data.get("technical_skills", {})
+	raw_training = data.get("training", {})
+	raw_project = data.get("project", {})
 
 	if not isinstance(listed_skills, list):
 		raise ValueError("skills must be a list")
@@ -123,13 +156,118 @@ def map_skills(data: dict) -> dict:
 		raise ValueError("projects must be a list")
 	if not isinstance(experience, list):
 		raise ValueError("experience must be a list")
+	if not isinstance(skill_sources, dict):
+		raise ValueError("skill_sources must be a dictionary")
+	if not isinstance(training_skills, list):
+		raise ValueError("training_skills must be a list")
+	if not isinstance(project_technology_skills, list):
+		raise ValueError("project_technology_skills must be a list")
+	if raw_technical_skills not in ({}, None) and not isinstance(raw_technical_skills, dict):
+		raise ValueError("technical_skills must be an object")
+	if raw_training not in ({}, None) and not isinstance(raw_training, dict):
+		raise ValueError("training must be an object")
+	if raw_project not in ({}, None) and not isinstance(raw_project, dict):
+		raise ValueError("project must be an object")
 
-	listed_set = set(listed_skills)
-	alias_index = _build_alias_index(listed_skills)
+	normalized_listed_skills = [_normalize_skill_name(item) for item in listed_skills]
+	normalized_listed_skills = [item for item in normalized_listed_skills if item]
+	listed_set = set(normalized_listed_skills)
+	alias_index = _build_alias_index(normalized_listed_skills)
 	result: dict[str, dict] = {}
 
 	for skill in sorted(listed_set):
 		result[skill] = _empty_skill_record(skill, listed=True)
+
+	# Attach deterministic evidence for listed skills from structured sources.
+	for skill, sources in skill_sources.items():
+		normalized_skill = _normalize_skill_name(skill)
+		if normalized_skill == "":
+			continue
+
+		if normalized_skill not in result:
+			result[normalized_skill] = _empty_skill_record(
+				normalized_skill,
+				listed=normalized_skill in listed_set,
+			)
+
+		if isinstance(sources, list):
+			for source in sources:
+				if isinstance(source, str):
+					_append_evidence(result[normalized_skill], source)
+
+	for skill in training_skills:
+		normalized_skill = _normalize_skill_name(skill)
+		if normalized_skill == "":
+			continue
+		if normalized_skill not in result:
+			result[normalized_skill] = _empty_skill_record(
+				normalized_skill,
+				listed=normalized_skill in listed_set,
+			)
+		_append_evidence(result[normalized_skill], "training")
+
+	for skill in project_technology_skills:
+		normalized_skill = _normalize_skill_name(skill)
+		if normalized_skill == "":
+			continue
+		if normalized_skill not in result:
+			result[normalized_skill] = _empty_skill_record(
+				normalized_skill,
+				listed=normalized_skill in listed_set,
+			)
+		_append_evidence(result[normalized_skill], "project.technologies")
+
+	technical_source_map = {
+		"programming_languages": "technical_skills.programming_languages",
+		"databases": "technical_skills.databases",
+		"web_technologies": "technical_skills.web_technologies",
+		"tools": "technical_skills.tools",
+	}
+	if isinstance(raw_technical_skills, dict):
+		for key, source in technical_source_map.items():
+			items = raw_technical_skills.get(key, [])
+			if not isinstance(items, list):
+				continue
+			for item in items:
+				normalized_skill = _normalize_skill_name(item)
+				if normalized_skill == "":
+					continue
+				if normalized_skill not in result:
+					result[normalized_skill] = _empty_skill_record(
+						normalized_skill,
+						listed=normalized_skill in listed_set,
+					)
+				_append_evidence(result[normalized_skill], source)
+
+	if isinstance(raw_training, dict):
+		for key in ("manual_testing", "automation_testing"):
+			items = raw_training.get(key, [])
+			if not isinstance(items, list):
+				continue
+			for item in items:
+				normalized_skill = _normalize_skill_name(item)
+				if normalized_skill == "":
+					continue
+				if normalized_skill not in result:
+					result[normalized_skill] = _empty_skill_record(
+						normalized_skill,
+						listed=normalized_skill in listed_set,
+					)
+				_append_evidence(result[normalized_skill], f"training.{key}")
+
+	if isinstance(raw_project, dict):
+		project_tech_list = raw_project.get("technologies", [])
+		if isinstance(project_tech_list, list):
+			for item in project_tech_list:
+				normalized_skill = _normalize_skill_name(item)
+				if normalized_skill == "":
+					continue
+				if normalized_skill not in result:
+					result[normalized_skill] = _empty_skill_record(
+						normalized_skill,
+						listed=normalized_skill in listed_set,
+					)
+				_append_evidence(result[normalized_skill], "project.technologies")
 
 	for project in projects:
 		if not isinstance(project, dict):
@@ -150,8 +288,7 @@ def map_skills(data: dict) -> dict:
 				)
 
 			result[canonical]["projects"] += mentions
-			if description not in result[canonical]["evidence"]:
-				result[canonical]["evidence"].append(description)
+			_append_evidence(result[canonical], description)
 
 	for role in experience:
 		if not isinstance(role, dict):
@@ -174,7 +311,18 @@ def map_skills(data: dict) -> dict:
 				)
 
 			result[canonical]["experience_months"] += months
-			if description not in result[canonical]["evidence"]:
-				result[canonical]["evidence"].append(description)
+			_append_evidence(result[canonical], description)
 
-	return dict(sorted(result.items(), key=lambda item: item[0]))
+	for skill_name, payload in result.items():
+		if payload.get("listed") and not payload.get("evidence"):
+			# Keep evidence non-empty for listed skills even when only provided in flat lists.
+			_append_evidence(payload, "skills")
+		payload["name"] = skill_name
+		if not payload.get("evidence"):
+			logger.warning("No evidence for skill: %s", skill_name)
+		logger.debug("Evidence for %s: %s", skill_name, payload.get("evidence", []))
+
+	final_result = dict(sorted(result.items(), key=lambda item: item[0]))
+	logger.debug("Found %d skills", len(final_result))
+	logger.debug("Mapper output: %s", final_result)
+	return final_result

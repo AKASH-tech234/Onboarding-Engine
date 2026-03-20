@@ -2,8 +2,15 @@
 
 from __future__ import annotations
 
+from utils.logger import get_logger
+
+
+logger = get_logger("reasoning")
+
 
 def generate_reasoning(skills: dict) -> dict:
+    logger.debug("Reasoning input: %s", skills)
+
     if not isinstance(skills, dict):
         raise ValueError("skills must be a dictionary")
 
@@ -36,6 +43,8 @@ def generate_reasoning(skills: dict) -> dict:
 
         updated = dict(payload)
         updated["reasoning"] = reasoning
+        logger.debug("Reasoning for %s: %s", name, reasoning)
         result[name] = updated
 
+    logger.debug("Reasoning output: %s", result)
     return result

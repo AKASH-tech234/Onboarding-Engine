@@ -82,6 +82,26 @@ def test_build_signals_uses_required_formulas() -> None:
     assert java["recency"] == 0.9
 
 
+def test_build_signals_boosts_project_technology_and_training_sources() -> None:
+    skills = {
+        "selenium": {
+            "name": "selenium",
+            "listed": True,
+            "projects": 0,
+            "experience_months": 0,
+            "evidence": ["project.technologies", "training.automation_testing"],
+        }
+    }
+
+    enriched = build_signals(skills)
+    signals = enriched["selenium"]["signals"]
+
+    # 0 projects + project.technologies boost => effective project count 1.
+    assert abs(signals["frequency"] - (1 / 3 + 0.5)) < 1e-9
+    assert signals["complexity"] == 0.5
+    assert signals["recency"] == 0.7
+
+
 def test_compute_proficiency_assigns_score_and_level() -> None:
     with_signals = build_signals(BASE_SKILLS)
     scored = compute_proficiency(with_signals)
@@ -106,7 +126,7 @@ def test_compute_confidence_uses_rule_weights_and_caps() -> None:
     assert py["confidence"] == 1.0
 
     react = confident["react"]
-    assert react["confidence"] == 0.0
+    assert react["confidence"] == 0.2
 
 
 def test_generate_reasoning_is_template_based_and_non_empty() -> None:

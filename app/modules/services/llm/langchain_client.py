@@ -4,11 +4,16 @@ import os
 
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain_google_genai import ChatGoogleGenerativeAI
+from utils.logger import get_logger
+
+
+logger = get_logger("llm")
 
 
 def _build_client() -> ChatGoogleGenerativeAI | None:
     api_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
     if not api_key:
+        logger.warning("Gemini API key not configured; skipping LLM enhancement")
         return None
 
     return ChatGoogleGenerativeAI(
@@ -22,6 +27,8 @@ def call_llm(system_prompt: str, user_prompt: str) -> str:
     client = _build_client()
     if client is None:
         return ""
+
+    logger.debug("Invoking Gemini model for project description analysis")
 
     response = client.invoke(
         [

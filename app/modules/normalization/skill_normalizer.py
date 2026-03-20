@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from utils.logger import get_logger
+
 
 SKILL_VARIANTS = {
     "nodejs": "node.js",
@@ -9,6 +11,9 @@ SKILL_VARIANTS = {
     "node js": "node.js",
     "py": "python",
 }
+
+
+logger = get_logger("normalization")
 
 
 def _normalize_single_skill(skill: str) -> str:
@@ -24,6 +29,8 @@ def _normalize_single_skill(skill: str) -> str:
 
 
 def normalize_skills(data: dict) -> dict:
+    logger.debug("Normalization input: %s", data)
+
     if not isinstance(data, dict):
         raise ValueError("Input must be an object")
 
@@ -47,4 +54,5 @@ def normalize_skills(data: dict) -> dict:
 
     updated = dict(data)
     updated["skills"] = normalized_skills
+    logger.debug("Normalization output: %s", updated)
     return updated

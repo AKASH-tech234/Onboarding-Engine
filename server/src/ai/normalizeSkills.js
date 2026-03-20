@@ -1,52 +1,64 @@
-const { embed } = require('./gemini.js');
-const { supabase } = require('../db/supabaseClient.js');
+const supabase = require('../db/supabaseClient')
+const { embed } = require('./gemini')
 
 async function normalizeSkills(skillNames) {
-  const results = [];
+  const results = []
 
   for (const skillName of skillNames) {
-    const vec = await embed(skillName);
-    
-    // Relies on RPC 'match_skill' returning [{ id, name, similarity }]
-    const { data: matches, error } = await supabase.rpc('match_skill', {
-      query_embedding: vec,
-      match_count: 1
-    });
+    const vec = await embed(skillName)
 
-    if (error) {
-      console.error(error);
-      throw error;
+    const { data, error } = await supabase.rpc('match_skill_by_embedding', {
+      query_embedding: vec,
+      match_threshold: 0.0,
+      match_count: 1
+    })
+
+    let topMatch = null
+    if (!error && data && data.length > 0) {
+      topMatch = data[0]
     }
 
-    if (matches && matches.length > 0 && matches[0].similarity >= 0.85) {
+    if (topMatch && topMatch.similarity >= 0.85) {
       results.push({
         original: skillName,
-        normalized_id: matches[0].id,
-        normalized_name: matches[0].name,
+        normalized_id: topMatch.id,
+        normalized_name: topMatch.name,
         matched: true
-      });
+      })
     } else {
-      const { data: newSkill, error: insertError } = await supabase
+      const { data: inserted, error: insertError } = await supabase
         .from('skills')
-        .insert({
-          name: skillName,
-          category: 'Unknown',
-          domain: 'Unknown',
-          embedding: vec
-        })
-        .select()
-        .single();
+        .insert({ name: skillName, category: 'Unknown', domain: 'Unknown', embedding: vec })
+        .select('id')
+        .single()
 
-      results.push({
-        original: skillName,
-        normalized_id: newSkill?.id,
-        normalized_name: skillName,
-        matched: false
-      });
+      if (insertError && insertError.code === '23505') {
+        const { data: existing } = await supabase
+          .from('skills')
+          .select('id, name')
+          .eq('name', skillName)
+          .single()
+
+        results.push({
+          original: skillName,
+          normalized_id: existing.id,
+          normalized_name: existing.name,
+          matched: true
+        })
+      } else if (insertError) {
+        throw insertError
+      } else {
+        results.push({
+          original: skillName,
+          normalized_id: inserted.id,
+          normalized_name: skillName,
+          matched: false
+        })
+      }
     }
   }
 
-  return results;
+  return results
 }
 
-module.exports = { normalizeSkills };
+module.exports = { normalizeSkills }

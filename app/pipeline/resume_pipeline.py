@@ -9,7 +9,11 @@ from modules.scoring.confidence_engine import compute_confidence
 from modules.scoring.proficiency_engine import compute_proficiency
 from modules.validation.input_validator import validate_input
 
-from modules.services.llm.llm_services import extract_project_info
+from modules.services.llm.llm_services import (
+    LLM_STATUS_SUCCESS,
+    LLM_STATUS_PARTIAL_ACCEPTED,
+    extract_project_info,
+)
 from utils.logger import get_logger
 
 
@@ -72,6 +76,11 @@ def enhance_projects_with_llm(mapped: dict, projects: list[dict]) -> dict:
         if not isinstance(result, dict):
             continue
 
+        llm_status = result.get("llm_status", "fallback")
+        logger.debug("LLM status for project '%s': %s", project.get("name", "unknown"), llm_status)
+        if llm_status not in {LLM_STATUS_SUCCESS, LLM_STATUS_PARTIAL_ACCEPTED}:
+            continue
+
         evidence = result.get("evidence", "")
         skills = result.get("skills", [])
         if not isinstance(skills, list):
@@ -84,16 +93,27 @@ def enhance_projects_with_llm(mapped: dict, projects: list[dict]) -> dict:
             if normalized_skill == "":
                 continue
 
-            if normalized_skill in mapped:
-                mapped[normalized_skill]["projects"] += 1
+            if normalized_skill not in mapped:
+                mapped[normalized_skill] = {
+                    "name": normalized_skill,
+                    "listed": False,
+                    "projects": 0,
+                    "experience_months": 0,
+                    "evidence": [],
+                }
 
-                evidence_list = mapped[normalized_skill].setdefault("evidence", [])
-                if not isinstance(evidence_list, list):
-                    mapped[normalized_skill]["evidence"] = []
-                    evidence_list = mapped[normalized_skill]["evidence"]
+            mapped[normalized_skill]["projects"] += 1
 
-                if isinstance(evidence, str) and evidence and evidence not in evidence_list:
-                    evidence_list.append(evidence)
+            evidence_list = mapped[normalized_skill].setdefault("evidence", [])
+            if not isinstance(evidence_list, list):
+                mapped[normalized_skill]["evidence"] = []
+                evidence_list = mapped[normalized_skill]["evidence"]
+
+            if "llm.project_description" not in evidence_list:
+                evidence_list.append("llm.project_description")
+
+            if isinstance(evidence, str) and evidence and evidence not in evidence_list:
+                evidence_list.append(evidence)
 
     return mapped
 

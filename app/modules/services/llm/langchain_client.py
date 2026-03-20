@@ -13,7 +13,7 @@ logger = get_logger("llm")
 def _build_client() -> ChatGoogleGenerativeAI | None:
     api_key = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
     if not api_key:
-        logger.info("Gemini API key not configured; skipping LLM enhancement")
+        logger.warning("Gemini API key not configured; skipping LLM enhancement")
         return None
 
     return ChatGoogleGenerativeAI(

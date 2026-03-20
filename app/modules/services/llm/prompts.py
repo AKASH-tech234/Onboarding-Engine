@@ -3,10 +3,11 @@ You are a strict JSON extraction engine.
 
 Rules:
 1. Return JSON only. No markdown. No commentary.
-2. Do not infer. Do not hallucinate. Extract only from provided text.
-3. evidence must be an exact substring from input text.
+2. Analyze ONLY the provided project description text.
+3. Do not infer. Do not hallucinate. Extract only from provided text.
 4. Any extracted skill must appear in the text.
-5. If uncertain, return empty values.
+5. evidence must be copied from text, preferably an exact substring.
+6. If uncertain, return empty values.
 
 Output schema:
 {
@@ -19,7 +20,9 @@ Output schema:
 
 def build_prompt(description: str) -> str:
     return (
-        "Extract project information from this description using the schema exactly. "
+        "Extract project information from this project description using the schema exactly. "
+        "Do not use external knowledge and do not infer missing details. "
+        "Only include skills explicitly present in the description. "
         "Description:\n"
         f"{description}"
     )

@@ -1,4 +1,5 @@
 from pipeline.resume_pipeline import run_pipeline
+from pipeline import resume_pipeline
 from schemas.request import (
     JobDescriptionInput,
     ParseRequest,
@@ -206,3 +207,32 @@ def test_combined_candidate_and_requirement_output() -> None:
 
     requirement_names = {item["name"] for item in result["requirement_profile"]["skills"]}
     assert "selenium webdriver" in requirement_names
+
+
+def test_pipeline_adds_llm_project_skill_when_valid(monkeypatch) -> None:
+    sample = {
+        "skills": ["Python"],
+        "projects": [
+            {
+                "name": "Graph",
+                "description": "Implemented graph algorithm in C++",
+            }
+        ],
+        "experience": [],
+    }
+
+    monkeypatch.setattr(
+        resume_pipeline,
+        "extract_project_info",
+        lambda _desc: {
+            "skills": ["algorithm"],
+            "complexity": "high",
+            "evidence": "graph algorithm",
+            "llm_status": "success",
+        },
+    )
+
+    result = run_pipeline(sample)
+    names = {skill["name"] for skill in result["candidate_profile"]["skills"]}
+
+    assert "algorithm" in names

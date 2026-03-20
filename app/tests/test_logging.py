@@ -77,5 +77,6 @@ def test_pipeline_logs_llm_failure_path() -> None:
         "Gemini API key not configured" in logs
         or "LLM raw output" in logs
         or "LLM call failed" in logs
+        or "parse failed" in logs
         or "LLM output rejected" in logs
     )

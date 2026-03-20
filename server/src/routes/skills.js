@@ -1,20 +1,20 @@
-const express = require('express');
-const { supabase } = require('../db/supabaseClient.js');
+const express = require('express')
+const supabase = require('../db/supabaseClient')
 
-const router = express.Router();
+const router = express.Router()
 
 router.get('/', async (req, res, next) => {
   try {
     const { data, error } = await supabase
       .from('skills')
       .select('*')
-      .order('name');
-      
-    if (error) throw error;
-    res.json(data);
-  } catch (err) {
-    next(err);
-  }
-});
+      .order('name', { ascending: true })
 
-module.exports = router;
+    if (error) throw error
+    res.json(data || [])
+  } catch (err) {
+    next(err)
+  }
+})
+
+module.exports = router

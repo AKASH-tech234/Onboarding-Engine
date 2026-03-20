@@ -1,37 +1,50 @@
-const express = require('express');
-const cors = require('cors');
-const multer = require('multer');
-const path = require('path');
+const path = require('path')
+const express = require('express')
+const cors = require('cors')
+const multer = require('multer')
 
-const sessionsRouter = require('./routes/sessions.js');
-const coursesRouter = require('./routes/courses.js');
-const skillsRouter = require('./routes/skills.js');
+const app = express()
 
-const app = express();
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 }
+})
 
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+function loadRoute(modulePath) {
+  try {
+    return require(modulePath)
+  } catch (error) {
+    if (error.code === 'MODULE_NOT_FOUND') {
+      return express.Router()
+    }
+    throw error
+  }
+}
 
-const upload = multer({ 
-  storage: multer.memoryStorage(), 
-  limits: { fileSize: 10 * 1024 * 1024 } 
-});
+app.use(cors())
+app.use(express.json())
+app.use(express.urlencoded({ extended: true }))
 
-app.get('/api/v1/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() })
+})
 
-app.use('/api/v1/sessions', sessionsRouter);
-app.use('/api/v1/courses', coursesRouter);
-app.use('/api/v1/skills', skillsRouter);
+app.use('/api/v1/sessions', loadRoute('./routes/sessions'))
+app.use('/api/v1/courses', loadRoute('./routes/courses'))
+app.use('/api/v1/skills', loadRoute('./routes/skills'))
+
+if (process.env.EXPRESS_STATIC === 'true') {
+  app.use(express.static(path.join(__dirname, '../public')))
+}
 
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(err.status || 500).json({ error: err.message || 'Internal server error' });
-});
+  console.error(err.stack)
+  res.status(err.status || 500).json({ error: err.message || 'Internal server error' })
+})
 
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+if (require.main === module) {
+  const port = process.env.PORT || 3001
+  app.listen(port, () => console.log('Server running on port', port))
+}
 
-module.exports = { upload };
+module.exports = { app, upload }

@@ -8,6 +8,7 @@ const { normalizeSkills } = require('../ai/normalizeSkills')
 const { computeSkillGap } = require('../ai/computeSkillGap')
 const { adaptivePathway } = require('../ai/adaptivePathway')
 const { generateReasoningTrace } = require('../ai/generateReasoningTrace')
+const logger = require('../utils/logger')
 
 const router = express.Router()
 
@@ -15,6 +16,8 @@ router.post('/analyze', upload.fields([{ name: 'resume', maxCount: 1 }, { name: 
   try {
     if (!req.files?.resume) return res.status(400).json({ error: 'Resume file is required' })
     if (!req.files?.jd && !req.body.jd_text) return res.status(400).json({ error: 'Job description is required' })
+
+    logger.info('Analyze request received — extracting text from uploaded files')
 
     let resumeText
     try {
@@ -39,6 +42,7 @@ router.post('/analyze', upload.fields([{ name: 'resume', maxCount: 1 }, { name: 
       }
     }
 
+    logger.info('Extracting skills from resume and job description')
     let resumeResult, jdResult
     try { resumeResult = await extractResumeSkills(resumeText) }
     catch (e) {
@@ -62,6 +66,7 @@ router.post('/analyze', upload.fields([{ name: 'resume', maxCount: 1 }, { name: 
     resumeResult.skills = resumeResult.skills.map(s => ({ ...s, normalized_id: normMap[s.name]?.normalized_id }))
     jdResult.skills = jdResult.skills.map(s => ({ ...s, normalized_id: normMap[s.name]?.normalized_id }))
 
+    logger.info('Computing skill gap and generating adaptive pathway')
     const skillGap = computeSkillGap(resumeResult.skills, jdResult.skills)
     const pathwayResult = await adaptivePathway(skillGap, supabase)
 
@@ -107,9 +112,11 @@ router.post('/analyze', upload.fields([{ name: 'resume', maxCount: 1 }, { name: 
     if (dbError) throw dbError
 
     response.session_id = sessionRow.id
+    logger.info(`Session created — id: ${sessionRow.id}, gaps: ${skillGap.total_gaps}, training hrs: ${pathwayResult.total_training_hrs}`)
     res.status(201).json(response)
 
   } catch (err) {
+    logger.error(`Analyze error: ${err.stack || err.message}`)
     next(err)
   }
 })

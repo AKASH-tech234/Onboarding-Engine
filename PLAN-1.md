@@ -40,7 +40,7 @@ The "AI" is not magic — it's a structured pipeline:
 | Framework | React 18 (Vite) | Fast HMR, familiar |
 | Styling | Tailwind CSS | Rapid UI without fighting CSS |
 | File Upload | react-dropzone | Clean UX for resume/JD upload |
-| Roadmap Visualization | React Flow (`reactflow`) | Purpose-built DAG visualization, handles node/edge layouts |
+| Roadmap Visualization | React Flow (`reactflow`) + `@dagrejs/dagre` | Purpose-built DAG visualization; dagre computes proper node positions automatically |
 | HTTP Client | Axios | |
 | State | React useState + useContext | Simple enough, no Redux needed |
 
@@ -75,6 +75,7 @@ CREATE TABLE courses (
   description   TEXT NOT NULL,
   skill_id      UUID REFERENCES skills(id),   -- primary skill this course teaches
   level         TEXT CHECK (level IN ('beginner', 'intermediate', 'advanced')),
+  level_num     INTEGER CHECK (level_num IN (1, 2, 3)),  -- 1=beginner, 2=intermediate, 3=advanced — used for numeric comparisons in SQL, kept in sync with level
   duration_hrs  NUMERIC(4,1),                  -- e.g. 4.5 hours
   domain        TEXT NOT NULL,                 -- mirrors skills.domain
   provider      TEXT,                          -- e.g. "Coursera", "Internal", "Udemy"
@@ -84,6 +85,8 @@ CREATE TABLE courses (
   created_at    TIMESTAMPTZ DEFAULT now()
 );
 ```
+
+> **Why `level_num`?** `level` is TEXT. PostgreSQL TEXT comparison sorts alphabetically: "advanced" < "beginner" < "intermediate" — which is semantically wrong. Never use `level >= 'intermediate'` in SQL. Always filter on `level_num` instead. Always set both fields together when inserting: `level='intermediate', level_num=2`.
 
 ### `sessions` table
 One row per user upload session. Stateless from user perspective (no auth), but lets us retrieve results.
@@ -239,6 +242,8 @@ Store result in `sessions.skill_gap`.
 
 This is the "original adaptive logic" the rubric specifically calls out. It's a **Weighted Dependency Graph traversal + Priority Queue** approach.
 
+> **Graph-based vs Knowledge Tracing — why we chose Graph:** The rubric (Slide 4) mentions both "Graph-based" and "Knowledge Tracing" as example algorithms. Knowledge Tracing (e.g. Bayesian Knowledge Tracing, Deep Knowledge Tracing) models the probability that a student has mastered a skill given their response history — it requires interaction data over time (correct/incorrect answers per question). We don't have that data from a one-shot resume+JD upload. A scored dependency graph is the correct choice here: it works from a single snapshot of the candidate's skills, is fully explainable to judges (every weight has a formula), and produces deterministic, auditable results. Mention this explicitly in Slide 4 if asked.
+
 #### 6a. Candidate Course Retrieval
 For each gap/missing skill, query the course catalog:
 ```sql
@@ -246,14 +251,19 @@ SELECT c.*, scm.impact
 FROM courses c
 JOIN skill_course_map scm ON c.id = scm.course_id
 WHERE scm.skill_id = $1
-  AND c.level >= $2  -- don't recommend courses below current level
+  AND c.level_num >= $2  -- $2 is levelToNum(current_level), filters out courses below candidate's current level
 ORDER BY scm.impact DESC, c.duration_hrs ASC
 LIMIT 3;
 ```
-Also run a vector search fallback:
+
+> **Why `level_num` not `level`?** `level` is TEXT. PostgreSQL alphabetical sort gives "advanced" < "beginner" < "intermediate" — completely wrong semantically. `level_num` (integer 1/2/3) is always correct for numeric comparison. `$2` is passed as `levelToNum(gap.current_level)` from JS, e.g. if the candidate already knows React at intermediate (2), we only fetch intermediate+ courses, not beginner ones they've already surpassed.
+
+Also run a vector search fallback for skills not found by exact `skill_id` match:
 ```sql
-SELECT * FROM courses
-ORDER BY embedding <=> $1  -- embedding of gap skill name
+SELECT c.*, 1 - (c.embedding <=> $1) AS similarity
+FROM courses c
+WHERE 1 - (c.embedding <=> $1) > 0.6
+ORDER BY c.embedding <=> $1
 LIMIT 3;
 ```
 Union and deduplicate. This gives us a candidate pool per skill gap.
@@ -318,13 +328,29 @@ function topologicalSort(courses) {
 ```
 
 #### 6d. Phase Grouping
-Group the ordered courses into phases for UX clarity:
-- **Phase 1: Foundation** — beginner-level courses, gap_size 3 (missing advanced skill)
-- **Phase 2: Core Competency** — intermediate courses, required skills
-- **Phase 3: Specialization** — advanced courses, preferred skills
-- **Phase 4: Stretch Goals** — nice-to-haves if time permits
+After topological sort, assign each course to a phase based purely on `course.level_num`. This is deterministic and unambiguous — phase is a property of the course's difficulty level, not of the gap size.
 
-Each phase has an estimated total duration and a completion milestone label.
+```javascript
+function assignPhase(course) {
+  if (course.level_num === 1) return { phase: 1, phase_label: 'Foundation' };
+  if (course.level_num === 2) return { phase: 2, phase_label: 'Core Competency' };
+  if (course.level_num === 3) {
+    return course.gap.required
+      ? { phase: 3, phase_label: 'Specialization' }
+      : { phase: 4, phase_label: 'Stretch Goals' };
+  }
+}
+```
+
+Phase meanings:
+- **Phase 1: Foundation** — `level_num = 1` (beginner). Candidate has zero knowledge of this skill. Start here.
+- **Phase 2: Core Competency** — `level_num = 2` (intermediate). Candidate has beginner knowledge but role needs intermediate+.
+- **Phase 3: Specialization** — `level_num = 3` (advanced), skill is `required: true`. Must reach this level for the role.
+- **Phase 4: Stretch Goals** — `level_num = 3` (advanced), skill is `required: false` (preferred). Nice-to-have after phases 1–3 are done.
+
+> **Why not use `gap_size` for phase assignment?** `gap_size` tells you how far the candidate needs to travel, not where the course sits. A course that teaches Docker at beginner level is always Phase 1 regardless of how large the Docker gap is. Mixing gap_size into phase assignment (as the old plan did) produced contradictory rules like "Phase 1 = beginner AND gap_size 3" — a beginner Docker course doesn't care about the gap_size, it's just a beginner course.
+
+Each phase has an estimated total duration (sum of `duration_hrs` for all courses in that phase) and a completion milestone label.
 
 Store final pathway in `sessions.pathway`.
 
@@ -502,28 +528,57 @@ This is the most important UI component. A DAG where:
 - Phase groupings shown as swimlane-style background sections
 - Bottom shows total estimated time to competency
 
-React Flow setup:
+React Flow setup with dagre auto-layout (never hardcode positions — with 4+ courses in a phase they will overlap):
 ```jsx
-const nodes = pathway.flatMap((phase, pi) =>
-  phase.courses.map((course, ci) => ({
+import dagre from '@dagrejs/dagre';
+
+const NODE_WIDTH = 200;
+const NODE_HEIGHT = 80;
+
+function getLayoutedElements(nodes, edges) {
+  const g = new dagre.graphlib.Graph();
+  g.setDefaultEdgeLabel(() => ({}));
+  g.setGraph({ rankdir: 'TB', ranksep: 80, nodesep: 40 });
+
+  nodes.forEach(n => g.setNode(n.id, { width: NODE_WIDTH, height: NODE_HEIGHT }));
+  edges.forEach(e => g.setEdge(e.source, e.target));
+
+  dagre.layout(g);
+
+  const layoutedNodes = nodes.map(n => {
+    const { x, y } = g.node(n.id);
+    return { ...n, position: { x: x - NODE_WIDTH / 2, y: y - NODE_HEIGHT / 2 } };
+  });
+
+  return { nodes: layoutedNodes, edges };
+}
+
+// Build raw nodes and edges first, then run layout
+const rawNodes = pathway.flatMap(phase =>
+  phase.courses.map(course => ({
     id: course.id,
     type: 'courseNode',
-    position: { x: ci * 220, y: pi * 160 },
-    data: { course, phase: phase.phase_label }
+    position: { x: 0, y: 0 },  // dagre overwrites these
+    data: { course, phase_label: phase.phase_label }
   }))
 );
 
-const edges = pathway.flatMap(phase =>
+const rawEdges = pathway.flatMap(phase =>
   phase.courses.flatMap(course =>
-    course.prerequisites.map(prereqId => ({
+    (course.prerequisites || []).map(prereqId => ({
       id: `${prereqId}-${course.id}`,
       source: prereqId,
       target: course.id,
-      animated: true
+      animated: true,
+      type: 'smoothstep'
     }))
   )
 );
+
+const { nodes, edges } = getLayoutedElements(rawNodes, rawEdges);
 ```
+
+> **Why dagre?** The naive `x: ci * 220, y: pi * 160` grid breaks immediately when a phase has 4+ courses — nodes either overlap or run off-screen. Dagre is a Sugiyama-style hierarchical layout algorithm that handles arbitrary DAGs cleanly with proper rank assignment, crossing minimization, and coordinate assignment. It's what every serious graph tool (Mermaid, Graphviz) uses internally.
 
 #### Right Panel: Reasoning Trace
 - Collapsible sections for each reasoning trace section
@@ -691,18 +746,23 @@ VITE_API_URL=http://localhost:3001/api/v1
 - [ ] Responsive layout (tablet/mobile)
 - [ ] Error states (failed parse, LLM error, no gaps found)
 
-### Day 7: Cross-Domain Testing + README
+### Day 7: Cross-Domain Testing + README + Slide Deck
 - [ ] Test with Operational role (e.g. Warehouse Manager JD + non-tech resume) — verify it works
 - [ ] Test edge cases: resume with no matching skills, JD for very niche role
 - [ ] Write `README.md` (setup instructions, architecture overview, dependency list, logic explanation)
 - [ ] Write `Dockerfile`, test Docker build
-- [ ] Add sample resume + JD to `/examples` folder in repo
+- [ ] Add sample resume + JD files to `/examples` folder in repo (tech pair + ops pair — see Section 16)
+- [ ] **Draft all 5 slides** — content only, no polish needed yet (this moves off Day 8 to avoid crunch)
 
-### Day 8: Submission Polish
-- [ ] Record 2–3 min demo video (show two contrasting inputs: tech role vs operational role)
-- [ ] Build 5-slide deck (exact structure per rubric)
-- [ ] Final deployment check (Railway/Render + Vercel + Supabase)
-- [ ] Verify public GitHub repo: no leaked keys, README complete, Dockerfile works
+### Day 8: Buffer + Polish + Submit
+- [ ] Fix any bugs surfaced during Day 7 testing — this is why Day 8 is intentionally light
+- [ ] Polish slide deck visuals (add diagrams, clean up layout)
+- [ ] Record 2–3 min demo video (use pre-saved session IDs from Section 16 as fallback if pipeline is slow)
+- [ ] Final deployment check: Railway/Render + Vercel + Supabase all live
+- [ ] Verify public GitHub repo: no leaked `.env` files, README complete, Dockerfile builds cleanly
+- [ ] Submit
+
+> **Why slide deck on Day 7, not Day 8?** Doing the deck, demo video, deployment verification, and Docker testing in a single day leaves zero buffer for anything that goes wrong. Moving the deck draft to Day 7 means Day 8 is: fix issues → polish → record → submit. Much safer.
 
 ---
 
@@ -792,6 +852,34 @@ This is explicitly called out as a criterion. Our approach:
 **2:10–2:30** — **Second demo:** Upload warehouse operations resume + Warehouse Manager JD → completely different pathway (cross-domain scalability proof)  
 **2:30–2:50** — Show GitHub repo, README, Docker command  
 **2:50–3:00** — Close with stat: "28 hours of targeted training vs 80 hours of generic onboarding"
+
+---
+
+## 16. Demo Fallback — Pre-Computed Sessions
+
+If the pipeline is slow or breaks during judging, you need to be able to navigate directly to pre-computed results without re-running the full analysis. Do this on Day 7 after the system is stable.
+
+### What to prepare
+1. Create two real example file pairs and commit them to `/examples/`:
+   - `examples/tech/resume.pdf` — Software engineer, 3 yrs exp, skills: React, Python, Node.js, PostgreSQL. Missing: Docker, Kubernetes, TypeScript, AWS
+   - `examples/tech/jd.pdf` — Senior Full-Stack Engineer role requiring Docker, Kubernetes, TypeScript, AWS, React (advanced)
+   - `examples/ops/resume.pdf` — Warehouse associate, 2 yrs exp, skills: Forklift Operation, Manual Inventory. Missing: WMS software, OSHA certification, Supply Chain basics
+   - `examples/ops/jd.pdf` — Warehouse Operations Manager requiring WMS, OSHA, Supply Chain, Team Leadership
+
+2. Run the full pipeline on both pairs manually once the system is stable. Note the returned `session_id` for each.
+
+3. Store these in a `examples/session_ids.json` file (committed to repo, never in `.env`):
+```json
+{
+  "tech": "pre-computed-uuid-here",
+  "ops": "pre-computed-uuid-here"
+}
+```
+
+4. Add a "Load Demo" button on the upload page that navigates directly to `/results/<session_id>` for the selected pair. This is the demo fallback — if the LLM is rate-limited or slow during live judging, you click "Load Demo" and results appear instantly.
+
+### Demo video strategy
+Record the video using the pre-computed sessions, not a live run. This means the video always shows a clean, fast result regardless of network conditions on demo day. The live system still works for judges who want to test it themselves.
 
 ---
 

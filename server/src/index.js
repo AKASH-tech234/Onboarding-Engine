@@ -22,9 +22,11 @@ app.use(express.urlencoded({ extended: true }))
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
-
+//main route
 app.use('/api/v1/sessions', loadRoute('./routes/sessions'))
+
 app.use('/api/v1/courses', loadRoute('./routes/courses'))
+
 app.use('/api/v1/skills', loadRoute('./routes/skills'))
 
 if (process.env.EXPRESS_STATIC === 'true') {

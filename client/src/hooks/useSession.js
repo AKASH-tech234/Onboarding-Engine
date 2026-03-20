@@ -1,31 +1,28 @@
 import { useState, useEffect } from 'react';
 import client from '../api/client';
-import { mockData } from '../mockData';
 
-const USE_MOCK = true;
 const DEMO_IDS = { tech: 'FILL_AFTER_DEPLOY', ops: 'FILL_AFTER_DEPLOY' };
 
-export function useSession(id) {
-  const [data, setData] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+export function useSession(id, initialData = null) {
+  const [data, setData] = useState(initialData);
+  const [isLoading, setIsLoading] = useState(!initialData);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     let active = true;
 
     async function fetchSession() {
-      setIsLoading(true);
-      setError(null);
-      
-      if (USE_MOCK) {
-        setTimeout(() => {
-          if (active) {
-            setData(mockData);
-            setIsLoading(false);
-          }
-        }, 800);
+      if (initialData?.session_id === id) {
+        if (active) {
+          setData(initialData);
+          setIsLoading(false);
+          setError(null);
+        }
         return;
       }
+
+      setIsLoading(true);
+      setError(null);
 
       try {
         const response = await client.get(`/sessions/${id}`);
@@ -51,7 +48,7 @@ export function useSession(id) {
     fetchSession();
 
     return () => { active = false; };
-  }, [id]);
+  }, [id, initialData]);
 
   return { data, isLoading, error };
 }

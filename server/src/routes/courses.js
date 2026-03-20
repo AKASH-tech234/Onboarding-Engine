@@ -39,4 +39,8 @@ router.post('/', async (req, res, next) => {
   }
 })
 
+<<<<<<< HEAD
 module.exports = router
+=======
+module.exports = router
+>>>>>>> d31c7e750b8ce10af47dde6c45541c0ac032876f

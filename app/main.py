@@ -19,22 +19,13 @@ def parse_resume(payload: ResumeRequest) -> dict:
 if __name__ == "__main__":
 	from pipeline.resume_pipeline import run_pipeline
 
-	sample_input = {
-		"skills": ["Python", "React"],
+	sample = {
+		"skills": ["Python"],
 		"projects": [
-			{
-				"name": "Chat App",
-				"description": "Built using Node.js and Socket.io",
-			}
+			{"name": "Chat", "description": "Built using WebSocket"}
 		],
-		"experience": [
-			{
-				"role": "Backend Intern",
-				"description": "Worked on Python Django APIs",
-				"duration": "Jan 2023 - Jun 2023",
-			}
-		],
+		"experience": [],
 	}
 
-	result = run_pipeline(sample_input)
+	result = run_pipeline(sample)
 	print(result)

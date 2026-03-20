@@ -1,5 +1,11 @@
 # Dependencies
 node_modules/
+venv/
+env/
+.venv/
+.venv*/
+app/.venv/
+app/.venv*/
 
 # Environment variables — NEVER commit these
 .env

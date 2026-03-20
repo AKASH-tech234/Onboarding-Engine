@@ -29,11 +29,12 @@ def compute_confidence(skills: dict) -> dict:
 			confidence += 0.4
 		if experience_months > 0:
 			confidence += 0.4
-		if len(evidence) > 0:
+		has_evidence = any(isinstance(item, str) and item for item in evidence)
+		if has_evidence:
 			confidence += 0.2
 
 		updated = dict(payload)
-		updated["confidence"] = round(min(confidence, 1.0), 4)
+		updated["confidence"] = round(max(0.0, min(confidence, 1.0)), 4)
 		result[name] = updated
 
 	return result

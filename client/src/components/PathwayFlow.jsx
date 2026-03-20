@@ -106,31 +106,33 @@ export default function PathwayFlow({ pathway, onNodeClick }) {
     );
   }
 
-  const rawNodes = pathway.phases.flatMap((phase) =>
-    phase.courses.map((course) => ({
-      id: course.id,
-      type: 'courseNode',
-      position: { x: 0, y: 0 },
-      data: { course, phase_label: phase.phase_label, phase_num: phase.phase },
-    }))
-  );
-
-  const rawEdges = pathway.phases.flatMap((phase) =>
-    phase.courses.flatMap((course) =>
-      (course.prerequisites || []).map((prereqId) => ({
-        id: `${prereqId}-${course.id}`,
-        source: prereqId,
-        target: course.id,
-        animated: false,
-        type: 'flowingEdge',
+  const { nodes, edges } = React.useMemo(() => {
+    const rNodes = pathway.phases.flatMap((phase) =>
+      phase.courses.map((course) => ({
+        id: course.id,
+        type: 'courseNode',
+        position: { x: 0, y: 0 },
+        data: { course, phase_label: phase.phase_label, phase_num: phase.phase },
       }))
-    )
-  );
+    );
 
-  const nodeIds = new Set(rawNodes.map(n => n.id));
-  const validEdges = rawEdges.filter(edge => nodeIds.has(edge.source) && nodeIds.has(edge.target));
+    const rEdges = pathway.phases.flatMap((phase) =>
+      phase.courses.flatMap((course) =>
+        (course.prerequisites || []).map((prereqId) => ({
+          id: `${prereqId}-${course.id}`,
+          source: prereqId,
+          target: course.id,
+          animated: false,
+          type: 'flowingEdge',
+        }))
+      )
+    );
 
-  const { nodes, edges } = getLayoutedElements(rawNodes, validEdges);
+    const nodeIds = new Set(rNodes.map(n => n.id));
+    const vEdges = rEdges.filter(edge => nodeIds.has(edge.source) && nodeIds.has(edge.target));
+
+    return getLayoutedElements(rNodes, vEdges);
+  }, [pathway]);
   const totalCourses = pathway.phases.reduce((sum, phase) => sum + phase.courses.length, 0);
 
   return (
@@ -180,6 +182,7 @@ export default function PathwayFlow({ pathway, onNodeClick }) {
         nodesDraggable={false}
         panOnScroll
         selectionOnDrag={false}
+        onInit={(instance) => setTimeout(() => instance.fitView({ padding: 0.2, duration: 800 }), 150)}
         onNodeClick={(_, node) => onNodeClick(node.id)}
         connectionLineStyle={{ stroke: "#4f8ef7", strokeWidth: 1.5 }}
         defaultEdgeOptions={{ type: "flowingEdge", animated: false }}
@@ -220,17 +223,28 @@ export default function PathwayFlow({ pathway, onNodeClick }) {
       </ReactFlow>
 
       <div className="pointer-events-none absolute bottom-5 left-[70px] z-10 flex flex-wrap gap-2">
-        {pathway.phases.map((phase) => (
-          <span key={phase.phase} 
-            style={{ 
-              background: "rgba(255,255,255,0.04)", 
-              border: "1px solid rgba(255,255,255,0.08)", 
-              backdropFilter: "blur(8px)" 
-            }} 
-            className="rounded-full px-3 py-1.5 text-xs font-semibold text-slate-200">
-            {phaseTheme[phase.phase] || phase.phase_label}
-          </span>
-        ))}
+        {pathway.phases.map((phase) => {
+          const phasePillColors = {
+            1: { bg: 'rgba(79,142,247,0.15)', text: '#93bbfd', border: 'rgba(79,142,247,0.25)' },
+            2: { bg: 'rgba(167,139,250,0.15)', text: '#c4b5fd', border: 'rgba(167,139,250,0.25)' },
+            3: { bg: 'rgba(245,158,11,0.15)', text: '#fcd34d', border: 'rgba(245,158,11,0.25)' },
+            4: { bg: 'rgba(16,185,129,0.15)', text: '#6ee7b7', border: 'rgba(16,185,129,0.25)' },
+          };
+          const theme = phasePillColors[phase.phase] || { bg: 'rgba(255,255,255,0.04)', text: '#e2e8f0', border: 'rgba(255,255,255,0.08)' };
+          
+          return (
+            <span key={phase.phase} 
+              style={{ 
+                background: theme.bg, 
+                border: `1px solid ${theme.border}`, 
+                color: theme.text,
+                backdropFilter: "blur(8px)" 
+              }} 
+              className="rounded-full px-3 py-1.5 text-xs font-semibold shadow-[0_2px_8px_rgba(0,0,0,0.2)]">
+              {phaseTheme[phase.phase] || phase.phase_label}
+            </span>
+          );
+        })}
       </div>
     </div>
   );

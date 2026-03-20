@@ -1,3 +1,128 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  font-family: 'Manrope', sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(109, 125, 255, 0.24), transparent 28%),
+    radial-gradient(circle at top right, rgba(56, 189, 248, 0.14), transparent 24%),
+    radial-gradient(circle at bottom center, rgba(14, 165, 233, 0.16), transparent 30%),
+    linear-gradient(180deg, #050b16 0%, #07111f 54%, #020611 100%);
+  color: #e5eefb;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+*::selection {
+  background: rgba(109, 125, 255, 0.32);
+  color: #f8fbff;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.35);
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background: rgba(148, 163, 184, 0.32);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.44);
+}
+
+.app-shell {
+  position: relative;
+  overflow: hidden;
+}
+
+.app-shell::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(circle at center, black 42%, transparent 85%);
+  pointer-events: none;
+  opacity: 0.34;
+}
+
+.glass-panel {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.8), rgba(6, 13, 24, 0.76));
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  box-shadow:
+    0 22px 60px rgba(2, 6, 23, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(18px);
+}
+
+.hero-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(72px);
+  opacity: 0.42;
+  pointer-events: none;
+}
+
+.react-flow__renderer {
+  background:
+    radial-gradient(circle at top, rgba(109, 125, 255, 0.18), transparent 36%),
+    linear-gradient(180deg, rgba(8, 18, 33, 0.88), rgba(4, 10, 20, 0.96));
+}
+
+.react-flow__attribution {
+  display: none;
+}
+
+.react-flow__controls {
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(7, 17, 31, 0.88);
+  box-shadow: 0 20px 40px rgba(2, 6, 23, 0.4);
+}
+
+.react-flow__controls-button {
+  background: transparent;
+  border-bottom-color: rgba(148, 163, 184, 0.12);
+  color: #dbeafe;
+}
+
+.react-flow__controls-button:hover {
+  background: rgba(109, 125, 255, 0.18);
+}
+
+.react-flow__minimap {
+  overflow: hidden;
+  border-radius: 20px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(7, 17, 31, 0.8);
+  box-shadow: 0 20px 40px rgba(2, 6, 23, 0.35);
+}

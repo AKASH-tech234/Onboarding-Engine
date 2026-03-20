@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "node src/tests/runTests.js",
-    "seed": "node src/scripts/seedCatalog.js"
+    "seed": "node src/scripts/seedCatalog.js",
+    "dev":"nodemon src/index.js"
   },
   "keywords": [],
   "author": "",

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useLocation } from 'react-router-dom';
 import { useSession } from '../hooks/useSession';
 import GapSummaryCard from '../components/GapSummaryCard';
 import PathwayFlow from '../components/PathwayFlow';
@@ -9,7 +9,9 @@ import PhaseTimeline from '../components/PhaseTimeline';
 
 export default function ResultsPage() {
   const { id } = useParams();
-  const { data, isLoading, error } = useSession(id);
+  const location = useLocation();
+  const initialData = location.state?.sessionData || null;
+  const { data, isLoading, error } = useSession(id, initialData);
   const [selectedCourseId, setSelectedCourseId] = useState(null);
 
   if (isLoading) {

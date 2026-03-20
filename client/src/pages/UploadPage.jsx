@@ -33,8 +33,14 @@ export default function UploadPage() {
 
     setLocalError(null);
     try {
-      const data = await analyze(resumeFile, jdFile, jdText);
-      navigate(`/results/${data.session_id}`);
+      const activeJdFile = jdMode === 'file' ? jdFile : null;
+      const activeJdText = jdMode === 'text' ? jdText : '';
+      const data = await analyze(resumeFile, activeJdFile, activeJdText);
+      navigate(`/results/${data.session_id}`, {
+        state: {
+          sessionData: data,
+        },
+      });
     } catch (err) {
       // Error handled by hook
     }
@@ -54,7 +60,15 @@ export default function UploadPage() {
             <span className="text-sm font-medium text-slate-700">Job Description</span>
             <button
               onClick={() => {
-                setJdMode(m => m === 'file' ? 'text' : 'file');
+                setJdMode((mode) => {
+                  const nextMode = mode === 'file' ? 'text' : 'file';
+                  if (nextMode === 'file') {
+                    setJdText('');
+                  } else {
+                    setJdFile(null);
+                  }
+                  return nextMode;
+                });
                 setLocalError(null);
               }}
               className="text-sm text-blue-600 hover:text-blue-800"

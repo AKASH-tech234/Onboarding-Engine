@@ -1,35 +1,20 @@
-const express = require('express');
+const express = require('express')
+const supabase = require('../db/supabaseClient')
 
-const router = express.Router();
-
-function getSupabase() {
-  try {
-    return require('../db/supabaseClient');
-  } catch (error) {
-    if (error.code === 'MODULE_NOT_FOUND') {
-      return null;
-    }
-    throw error;
-  }
-}
+const router = express.Router()
 
 router.get('/', async (req, res, next) => {
   try {
-    const supabase = getSupabase();
-    if (!supabase) {
-      return res.status(503).json({ error: 'Database client not configured yet' });
-    }
+    const { data, error } = await supabase
+      .from('skills')
+      .select('*')
+      .order('name', { ascending: true })
 
-    const { data, error } = await supabase.from('skills').select('*').order('name', { ascending: true });
-
-    if (error) {
-      throw error;
-    }
-
-    return res.json(data || []);
-  } catch (error) {
-    return next(error);
+    if (error) throw error
+    res.json(data || [])
+  } catch (err) {
+    next(err)
   }
-});
+})
 
-module.exports = router;
+module.exports = router

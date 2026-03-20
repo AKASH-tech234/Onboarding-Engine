@@ -1,6 +1,8 @@
 const path = require('path')
 const express = require('express')
 const cors = require('cors')
+const logger = require('./utils/logger')
+const requestLogger = require('./middleware/requestLogger')
 
 const app = express()
 
@@ -18,6 +20,7 @@ function loadRoute(modulePath) {
 app.use(cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+app.use(requestLogger)
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
@@ -32,13 +35,13 @@ if (process.env.EXPRESS_STATIC === 'true') {
 }
 
 app.use((err, req, res, next) => {
-  console.error(err.stack)
+  logger.error(err.stack || err.message)
   res.status(err.status || 500).json({ error: err.message || 'Internal server error' })
 })
 
 if (require.main === module) {
   const port = process.env.PORT || 3001
-  app.listen(port, () => console.log('Server running on port', port))
+  app.listen(port, () => logger.info(`Server running on port ${port}`))
 }
 
 module.exports = { app }

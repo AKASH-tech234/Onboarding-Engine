@@ -1,10 +1,12 @@
 const { runComputeSkillGapTests } = require("./computeSkillGap.test");
 const { runAdaptivePathwayTests } = require("./adaptivePathway.test");
+const { runLoggerTests } = require("./logger.test");
 
 async function main() {
   const suites = [
     { name: "computeSkillGap", run: runComputeSkillGapTests },
     { name: "adaptivePathway", run: runAdaptivePathwayTests },
+    { name: "logger", run: runLoggerTests },
   ];
 
   for (const suite of suites) {

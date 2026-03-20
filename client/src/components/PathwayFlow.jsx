@@ -171,6 +171,7 @@ export default function PathwayFlow({ pathway, onNodeClick }) {
         </defs>
       </svg>
       <ReactFlow
+        key={nodes.map(n => n.id).join('-')}
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
@@ -182,7 +183,11 @@ export default function PathwayFlow({ pathway, onNodeClick }) {
         nodesDraggable={false}
         panOnScroll
         selectionOnDrag={false}
-        onInit={(instance) => setTimeout(() => instance.fitView({ padding: 0.2, duration: 800 }), 150)}
+        onInit={(instance) => {
+          instance.fitView({ padding: 0.2 });
+          setTimeout(() => instance.fitView({ padding: 0.2, duration: 800 }), 400);
+          setTimeout(() => instance.fitView({ padding: 0.2, duration: 400 }), 1400);
+        }}
         onNodeClick={(_, node) => onNodeClick(node.id)}
         connectionLineStyle={{ stroke: "#4f8ef7", strokeWidth: 1.5 }}
         defaultEdgeOptions={{ type: "flowingEdge", animated: false }}

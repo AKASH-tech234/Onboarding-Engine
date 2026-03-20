@@ -33,7 +33,7 @@ router.post('/analyze', upload.fields([{ name: 'resume', maxCount: 1 }, { name: 
       const result = await extractText({ buffer: req.files.resume[0].buffer, mimetype: req.files.resume[0].mimetype })
       resumeText = result.text
     } catch (e) {
-      return sendError(e.message === 'SCANNED_PDF' ? 'Resume appears to be a scanned image. Please upload a text-based PDF.' : 'Resume format not supported.')
+      return sendError(e.message === 'SCANNED_PDF' ? 'Resume is too short or does not appear to be a real resume. Please upload a proper resume PDF.' : 'Resume format not supported.')
     }
 
     if (req.body.jd_text) {
@@ -58,6 +58,15 @@ router.post('/analyze', upload.fields([{ name: 'resume', maxCount: 1 }, { name: 
     } catch (e) {
       if (e.message === 'LLM_JSON_INVALID') return sendError('Could not process skills with AI. Please try again.', 422)
       throw e
+    }
+
+    console.log('resumeResult.skills:', resumeResult.skills?.length, 'jdResult.skills:', jdResult.skills?.length)
+
+    if (!resumeResult.skills || resumeResult.skills.length === 0) {
+      return sendError('No skills could be extracted from the resume. Please upload a real resume.')
+    }
+    if (!jdResult.skills || jdResult.skills.length === 0) {
+      return sendError('No requirements could be extracted from the job description. Please upload a real JD.')
     }
 
     sendEvent('status', { message: 'Searching database for matched skills...' })

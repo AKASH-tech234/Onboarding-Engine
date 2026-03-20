@@ -19,7 +19,7 @@ async function extractText({ buffer, mimetype }) {
 
   const wordCount = text.split(/\s+/).filter(Boolean).length
 
-  if (wordCount < 50) {
+  if (wordCount < 150) {
     throw new Error('SCANNED_PDF')
   }
 

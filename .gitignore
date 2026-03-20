@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Environment variables — NEVER commit these
+.env
+server/.env
+client/.env
+
+# Vite build output
+client/dist/
+
+# Docker build artifacts
+server/public/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor folders
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Misc
+.cache/

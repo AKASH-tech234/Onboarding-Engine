@@ -6,7 +6,7 @@
   "scripts": {
     "test": "node src/tests/runTests.js",
     "seed": "node src/scripts/seedCatalog.js",
-    "dev":"nodemon src/index.js"
+    "dev": "nodemon src/index.js"
   },
   "keywords": [],
   "author": "",
@@ -20,6 +20,7 @@
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "google-auth-library": "^10.6.2",
+    "groq-sdk": "^1.1.1",
     "mammoth": "^1.12.0",
     "multer": "^2.1.1",
     "pdf-parse": "^2.4.5",

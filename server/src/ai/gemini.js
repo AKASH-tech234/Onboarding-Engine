@@ -1,13 +1,39 @@
 require('dotenv').config()
 const { GoogleGenerativeAI } = require('@google/generative-ai')
+const Groq = require('groq-sdk')
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
 async function complete(systemPrompt, userPrompt) {
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' })
-  const result = await model.generateContent(systemPrompt + '\n\n' + userPrompt)
-  const text = result.response.text()
-  return text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+  const isJson = systemPrompt.toLowerCase().includes('json') || userPrompt.toLowerCase().includes('json')
+  
+  const completion = await groq.chat.completions.create({
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt }
+    ],
+    model: "llama-3.3-70b-versatile",
+    response_format: isJson ? { type: "json_object" } : undefined
+  })
+  
+  const text = completion.choices[0].message.content
+  return text.trim()
+}
+
+async function* stream(systemPrompt, userPrompt) {
+  const stream = await groq.chat.completions.create({
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt }
+    ],
+    model: "llama-3.3-70b-versatile",
+    stream: true
+  })
+  
+  for await (const chunk of stream) {
+    yield chunk.choices[0]?.delta?.content || ""
+  }
 }
 
 async function embed(text) {
@@ -31,4 +57,4 @@ async function embed(text) {
   return data.embedding.values
 }
 
-module.exports = { complete, embed }
+module.exports = { complete, stream, embed }

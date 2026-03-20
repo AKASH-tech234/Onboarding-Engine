@@ -2,9 +2,7 @@ const supabase = require('../db/supabaseClient')
 const { embed } = require('./gemini')
 
 async function normalizeSkills(skillNames) {
-  const results = []
-
-  for (const skillName of skillNames) {
+  return Promise.all(skillNames.map(async (skillName) => {
     const vec = await embed(skillName)
 
     const { data, error } = await supabase.rpc('match_skill_by_embedding', {
@@ -19,12 +17,12 @@ async function normalizeSkills(skillNames) {
     }
 
     if (topMatch && topMatch.similarity >= 0.85) {
-      results.push({
+      return {
         original: skillName,
         normalized_id: topMatch.id,
         normalized_name: topMatch.name,
         matched: true
-      })
+      }
     } else {
       const { data: inserted, error: insertError } = await supabase
         .from('skills')
@@ -39,26 +37,24 @@ async function normalizeSkills(skillNames) {
           .eq('name', skillName)
           .single()
 
-        results.push({
+        return {
           original: skillName,
           normalized_id: existing.id,
           normalized_name: existing.name,
           matched: true
-        })
+        }
       } else if (insertError) {
         throw insertError
       } else {
-        results.push({
+        return {
           original: skillName,
           normalized_id: inserted.id,
           normalized_name: skillName,
           matched: false
-        })
+        }
       }
     }
-  }
-
-  return results
+  }))
 }
 
 module.exports = { normalizeSkills }

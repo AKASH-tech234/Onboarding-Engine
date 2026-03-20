@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "node src/tests/runTests.js"
+    "test": "node src/tests/runTests.js",
+    "seed": "node src/scripts/seedCatalog.js"
   },
   "keywords": [],
   "author": "",

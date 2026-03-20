@@ -14,7 +14,7 @@ export default function PhaseTimeline({ pathway, total_training_hrs }) {
   };
 
   return (
-    <div className="relative z-10 border-t border-white/10 bg-slate-950/65 px-5 py-4 backdrop-blur-xl">
+    <div className="relative z-10 border-t border-white/10 bg-slate-950/65 px-5 py-4">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-center">
         <div className="flex min-w-0 flex-1 items-center gap-4 overflow-x-auto pb-1">
           {validPhases.map((phase, index) => (

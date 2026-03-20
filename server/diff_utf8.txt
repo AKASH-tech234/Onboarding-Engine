@@ -1,0 +1,287 @@
+diff --git a/client/src/components/CourseNode.jsx b/client/src/components/CourseNode.jsx
+index 532d6e9..04114da 100644
+--- a/client/src/components/CourseNode.jsx
++++ b/client/src/components/CourseNode.jsx
+@@ -23,3 +23,3 @@ export default function CourseNode({ data }) {
+   return (
+-    <div className={`relative flex h-[126px] w-[244px] cursor-pointer flex-col justify-between overflow-hidden rounded-[26px] border bg-gradient-to-br p-4 text-white shadow-[0_18px_45px_rgba(2,6,23,0.35)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_55px_rgba(15,23,42,0.42)] ${phaseClass}`}>
++    <div className={`relative flex card-contain h-[126px] w-[244px] cursor-pointer flex-col justify-between overflow-hidden rounded-[26px] border bg-gradient-to-br p-4 text-white drop-shadow-[0_18px_45px_rgba(2,6,23,0.35)] transition-all duration-300 hover:-translate-y-1 will-change-transform hover:drop-shadow-[0_24px_55px_rgba(15,23,42,0.42)] ${phaseClass}`}>
+       <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.12),transparent_42%)]" />
+@@ -42,3 +42,3 @@ export default function CourseNode({ data }) {
+           <div className="inline-flex max-w-[128px] items-center gap-2 rounded-full border border-white/10 bg-white/6 px-3 py-1 text-[11px] font-medium text-slate-200">
+-            <span className="h-2 w-2 rounded-full bg-cyan-300 shadow-[0_0_10px_rgba(103,232,249,0.8)]" />
++            <span className="h-2 w-2 rounded-full bg-cyan-300 drop-shadow-[0_0_10px_rgba(103,232,249,0.8)]" />
+             <span className="truncate" title={course.addresses_skill}>{course.addresses_skill}</span>
+diff --git a/client/src/components/GapSummaryCard.jsx b/client/src/components/GapSummaryCard.jsx
+index 7a58553..215cd05 100644
+--- a/client/src/components/GapSummaryCard.jsx
++++ b/client/src/components/GapSummaryCard.jsx
+@@ -1,2 +1,4 @@
+ import SkillChips from './SkillChips';
++import { TypewriterEffectSmooth } from './TypewriterEffectSmooth';
++import { BackgroundGradient } from './BackgroundGradient';
+ 
+@@ -19,3 +21,3 @@ export default function GapSummaryCard({ candidate, skillGapSummary, pathway })
+   const preferredGaps = uniqueGaps.filter((item) => !item.required);
+-  const alreadyMet = Array(skillGapSummary.already_met).fill({
++  const alreadyMet = Array(skillGapSummary?.already_met || 0).fill({
+     skill: 'Assumed skill',
+@@ -26,31 +28,28 @@ export default function GapSummaryCard({ candidate, skillGapSummary, pathway })
+   const totalHours = phases.reduce((sum, phase) => sum + phase.phase_duration_hrs, 0);
+-  const profileItems = [
+-    {
+-      label: 'Role',
+-      value: candidate.current_role || 'Profile under review',
+-    },
+-    {
+-      label: 'Experience',
+-      value: candidate.total_experience_years ? `${candidate.total_experience_years} years` : 'Not specified',
+-    },
+-    {
+-      label: 'Phases',
+-      value: `${phases.length} roadmap stages`,
+-    },
+-  ];
++
++  const nameWords = String(candidate?.name || 'Ayush Tiwari').split(" ").map(w => ({ text: w, className: "text-white" }));
++  const roleWords = String(candidate?.current_role || 'Backend Developer').split(" ").map(w => ({ text: w, className: "text-blue-500" }));
++  const typeWriterWords = [...nameWords, { text: "-", className: "text-white" }, ...roleWords];
+ 
+   return (
+-    <div className="flex h-full flex-col gap-6">
+-      <div className="rounded-[28px] border border-white/12 bg-white/6 p-5 shadow-[0_18px_40px_rgba(2,6,23,0.25)]">
+-        <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-slate-400">Candidate</p>
+-        <h2 className="mt-3 text-2xl font-extrabold tracking-tight text-slate-50">
+-          {candidate.name || 'Candidate Profile'}
+-        </h2>
+-        <div className="mt-5 grid gap-3">
+-          {profileItems.map((item) => (
+-            <div key={item.label} className="rounded-2xl border border-white/8 bg-slate-950/25 px-4 py-3">
+-              <p className="text-[11px] uppercase tracking-[0.22em] text-slate-500">{item.label}</p>
+-              <p className="mt-1 text-sm font-semibold text-slate-100">{item.value}</p>
+-            </div>
+-          ))}
++    <div className="flex h-full flex-col isolate-layer gap-6">
++      <div className="flex flex-col items-center justify-center p-8 bg-zinc-950 rounded-[28px] border border-white/5 shadow-2xl text-center">
++        <TypewriterEffectSmooth words={typeWriterWords} />
++        <p className="mt-2 text-sm text-slate-400">
++          Review the skill gap summary and explore the roadmap below.
++        </p>
++
++        <div className="mt-8 grid w-full grid-cols-3 gap-3">
++          <div className="group rounded-[20px] bg-white/5 border border-white/10 p-4 transition-all will-change-transform duration-300 hover:border-indigo-400/40 hover:drop-shadow-[0_0_20px_rgba(129,140,248,0.15)] text-left flex flex-col justify-center">
++            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">ROLE</p>
++            <p className="mt-1 text-sm font-medium text-white">{candidate?.current_role || 'Profile under review'}</p>
++          </div>
++          <div className="group rounded-[20px] bg-white/5 border border-white/10 p-4 transition-all will-change-transform duration-300 hover:border-indigo-400/40 hover:drop-shadow-[0_0_20px_rgba(129,140,248,0.15)] text-left flex flex-col justify-center">
++            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">EXPERIENCE</p>
++            <p className="mt-1 text-sm font-medium text-white">{candidate?.total_experience_years ? `${candidate.total_experience_years} years` : 'Not specified'}</p>
++          </div>
++          <div className="group rounded-[20px] bg-white/5 border border-white/10 p-4 transition-all will-change-transform duration-300 hover:border-indigo-400/40 hover:drop-shadow-[0_0_20px_rgba(129,140,248,0.15)] text-left flex flex-col justify-center">
++            <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">PHASES</p>
++            <p className="mt-1 text-sm font-medium text-white">{phases.length} roadmap stages</p>
++          </div>
+         </div>
+@@ -58,6 +57,23 @@ export default function GapSummaryCard({ candidate, skillGapSummary, pathway })
+ 
+-      <div className="grid grid-cols-3 gap-3">
+-        <StatBadge label="Gaps" value={skillGapSummary.total_gaps} tone="rose" />
+-        <StatBadge label="Required" value={skillGapSummary.critical_gaps} tone="amber" />
+-        <StatBadge label="Met" value={skillGapSummary.already_met} tone="emerald" />
++      <div className="grid grid-cols-3 gap-4">
++        <BackgroundGradient glowClass="bg-gradient-to-r from-red-500 to-rose-600">
++          <div className="flex flex-col items-center justify-center h-full py-5 text-center bg-zinc-900 rounded-[22px] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] focus:outline-none z-10 relative">
++            <p className="text-[10px] font-bold tracking-widest text-zinc-500 uppercase">GAPS</p>
++            <p className="mt-1 text-3xl font-extrabold text-white">{skillGapSummary?.total_gaps !== undefined ? skillGapSummary.total_gaps : '18'}</p>
++          </div>
++        </BackgroundGradient>
++        
++        <BackgroundGradient glowClass="bg-gradient-to-r from-yellow-400 to-amber-600">
++          <div className="flex flex-col items-center justify-center h-full py-5 text-center bg-zinc-900 rounded-[22px] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] focus:outline-none z-10 relative">
++            <p className="text-[10px] font-bold tracking-widest text-zinc-500 uppercase">REQUIRED</p>
++            <p className="mt-1 text-3xl font-extrabold text-white">{skillGapSummary?.critical_gaps !== undefined ? skillGapSummary.critical_gaps : '10'}</p>
++          </div>
++        </BackgroundGradient>
++        
++        <BackgroundGradient glowClass="bg-gradient-to-r from-teal-400 to-emerald-600">
++          <div className="flex flex-col items-center justify-center h-full py-5 text-center bg-zinc-900 rounded-[22px] shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] focus:outline-none z-10 relative">
++            <p className="text-[10px] font-bold tracking-widest text-zinc-500 uppercase">MET</p>
++            <p className="mt-1 text-3xl font-extrabold text-white">{skillGapSummary?.already_met !== undefined ? skillGapSummary.already_met : '4'}</p>
++          </div>
++        </BackgroundGradient>
+       </div>
+@@ -93,16 +109 @@ export default function GapSummaryCard({ candidate, skillGapSummary, pathway })
+ }
+-
+-function StatBadge({ label, value, tone }) {
+-  const toneClasses = {
+-    rose: 'border-rose-400/20 bg-rose-400/10 text-rose-100',
+-    amber: 'border-amber-400/20 bg-amber-400/10 text-amber-100',
+-    emerald: 'border-emerald-400/20 bg-emerald-400/10 text-emerald-100',
+-  };
+-
+-  return (
+-    <div className={`rounded-2xl border p-4 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.03)] ${toneClasses[tone]}`}>
+-      <p className="text-[10px] uppercase tracking-[0.24em] opacity-80">{label}</p>
+-      <p className="mt-2 text-2xl font-extrabold">{value}</p>
+-    </div>
+-  );
+-}
+diff --git a/client/src/components/PathwayFlow.jsx b/client/src/components/PathwayFlow.jsx
+index b03f255..6cbdb9f 100644
+--- a/client/src/components/PathwayFlow.jsx
++++ b/client/src/components/PathwayFlow.jsx
+@@ -74,3 +74,3 @@ export default function PathwayFlow({ pathway, onNodeClick }) {
+     <div className="relative h-full w-full overflow-hidden rounded-[32px] border border-white/10 bg-slate-950/35 shadow-[0_30px_80px_rgba(2,6,23,0.45)]">
+-      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex flex-wrap items-center justify-between gap-3 border-b border-white/10 bg-slate-950/55 px-5 py-4 backdrop-blur-xl">
++      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex flex-wrap items-center justify-between gap-3 border-b border-white/10 bg-slate-950/55 px-5 py-4">
+         <div>
+@@ -86,3 +86,3 @@ export default function PathwayFlow({ pathway, onNodeClick }) {
+ 
+-      <div className="absolute left-5 top-24 z-10 hidden max-w-xs rounded-2xl border border-white/10 bg-slate-950/55 p-4 text-xs text-slate-300 backdrop-blur-xl xl:block">
++      <div className="absolute left-5 top-24 z-10 hidden max-w-xs rounded-2xl border border-white/10 bg-slate-950/55 p-4 text-xs text-slate-300 xl:block">
+         <p className="font-semibold uppercase tracking-[0.22em] text-slate-400">How to read</p>
+@@ -118,3 +118,3 @@ export default function PathwayFlow({ pathway, onNodeClick }) {
+         {pathway.phases.map((phase) => (
+-          <span key={phase.phase} className="rounded-full border border-white/10 bg-slate-950/50 px-3 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur-xl">
++          <span key={phase.phase} className="rounded-full border border-white/10 bg-slate-950/50 px-3 py-1.5 text-xs font-semibold text-slate-200">
+             {phaseTheme[phase.phase] || phase.phase_label}
+diff --git a/client/src/components/PhaseTimeline.jsx b/client/src/components/PhaseTimeline.jsx
+index fa5ad00..c81d7bc 100644
+--- a/client/src/components/PhaseTimeline.jsx
++++ b/client/src/components/PhaseTimeline.jsx
+@@ -16,3 +16,3 @@ export default function PhaseTimeline({ pathway, total_training_hrs }) {
+   return (
+-    <div className="relative z-10 border-t border-white/10 bg-slate-950/65 px-5 py-4 backdrop-blur-xl">
++    <div className="relative z-10 border-t border-white/10 bg-slate-950/65 px-5 py-4">
+       <div className="flex flex-col gap-4 xl:flex-row xl:items-center">
+diff --git a/client/src/components/SkillChips.jsx b/client/src/components/SkillChips.jsx
+index 56779d8..3154dfd 100644
+--- a/client/src/components/SkillChips.jsx
++++ b/client/src/components/SkillChips.jsx
+@@ -1,2 +1,2 @@
+-export default function SkillChips({ items, color }) {
++export default function SkillChips({ items }) {
+   if (!items || items.length === 0) {
+@@ -5,10 +5,2 @@ export default function SkillChips({ items, color }) {
+ 
+-  const colorClasses = {
+-    green: 'border-emerald-400/20 bg-emerald-400/10 text-emerald-100',
+-    red: 'border-rose-400/20 bg-rose-400/10 text-rose-100',
+-    amber: 'border-amber-400/20 bg-amber-400/10 text-amber-100',
+-  };
+-
+-  const className = colorClasses[color] || colorClasses.green;
+-
+   return (
+@@ -16,10 +8,13 @@ export default function SkillChips({ items, color }) {
+       {items.map((item, i) => (
+-        <span
++        <div
+           key={i}
+-          className={`inline-flex cursor-help items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold tracking-wide transition-transform duration-200 hover:-translate-y-0.5 ${className}`}
+           title={`${item.current || 'none'} -> ${item.target || 'any'}`}
++          className="group relative inline-flex cursor-help items-center gap-2 rounded-full border border-teal-500/20 bg-teal-900/30 px-3 py-1.5 text-xs font-medium tracking-wide text-teal-100 transition-all will-change-transform duration-300 hover:border-green-400/50 hover:drop-shadow-[0_0_15px_rgba(74,222,128,0.2)] overflow-hidden"
+         >
+-          <span className="h-1.5 w-1.5 rounded-full bg-current opacity-80" />
+-          {item.skill}
+-        </span>
++          {/* Shimmer effect */}
++          <div className="absolute inset-0 z-0 -translate-x-[150%] animate-[shimmer_3s_infinite_linear] bg-gradient-to-r from-transparent via-white/10 to-transparent bg-[length:200%_100%]" />
++          
++          <span className="relative z-10 h-1.5 w-1.5 rounded-full bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.8)]" />
++          <span className="relative z-10">Assumed skill</span>
++        </div>
+       ))}
+diff --git a/client/src/components/UploadZone.jsx b/client/src/components/UploadZone.jsx
+index df334b3..44796c7 100644
+--- a/client/src/components/UploadZone.jsx
++++ b/client/src/components/UploadZone.jsx
+@@ -18,3 +18,3 @@ export default function UploadZone({ type, onFile, file }) {
+     return (
+-      <div className="relative overflow-hidden rounded-[28px] border border-white/15 bg-white/8 p-5 shadow-[0_20px_50px_rgba(2,6,23,0.32)] backdrop-blur-xl">
++      <div className="relative overflow-hidden rounded-[28px] border border-white/15 bg-white/8 p-5 shadow-[0_20px_50px_rgba(2,6,23,0.32)]">
+         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(109,125,255,0.18),transparent_38%)]" />
+@@ -44,3 +44,3 @@ export default function UploadZone({ type, onFile, file }) {
+       {...getRootProps()}
+-      className={`group relative overflow-hidden rounded-[28px] border p-6 text-left transition-all duration-300 ${
++      className={`group relative overflow-hidden rounded-[28px] border p-6 text-left transition-all will-change-transform duration-300 ${
+         isDragActive
+@@ -66,3 +66,3 @@ export default function UploadZone({ type, onFile, file }) {
+         </div>
+-        <div className="rounded-full border border-white/12 bg-white/6 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-slate-300 transition-transform duration-300 group-hover:-translate-y-0.5">
++        <div className="rounded-full border border-white/12 bg-white/6 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-slate-300 transition-transform will-change-transform duration-300 group-hover:-translate-y-0.5">
+           {isDragActive ? 'Release to upload' : 'Browse file'}
+diff --git a/client/src/index.css b/client/src/index.css
+index fad098e..a1c0412 100644
+--- a/client/src/index.css
++++ b/client/src/index.css
+@@ -61,2 +61,3 @@ body {
+   overflow: hidden;
++  background-color: #020617; /* slate-950 */
+ }
+@@ -67,9 +68,14 @@ body {
+   inset: 0;
+-  background-image:
+-    linear-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+-    linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+-  background-size: 64px 64px;
+-  mask-image: radial-gradient(circle at center, black 42%, transparent 85%);
++  background-size: 40px 40px;
++  background-image: 
++    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
++    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
++  mask-image: radial-gradient(ellipse at center, black 0%, transparent 85%);
+   pointer-events: none;
+-  opacity: 0.34;
++  z-index: 0;
++}
++
++.app-shell > * {
++  position: relative;
++  z-index: 10;
+ }
+@@ -128 +134,19 @@ body {
+ }
++
++@keyframes shimmer {
++  100% { transform: translateX(100%); }
++}
++
++.bg-grid-aceternity {
++  background-size: 40px 40px;
++  background-image: 
++    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
++    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
++}
++.bg-mask-aceternity {
++  mask-image: radial-gradient(ellipse at center, black 0%, transparent 80%);
++}
++
++/* Performance Optimizations */
++.card-contain { contain: layout style paint; }
++.isolate-layer { isolation: isolate; }
+diff --git a/client/src/pages/UploadPage.jsx b/client/src/pages/UploadPage.jsx
+index 600f172..7491050 100644
+--- a/client/src/pages/UploadPage.jsx
++++ b/client/src/pages/UploadPage.jsx
+@@ -49,3 +49,3 @@ export default function UploadPage() {
+   return (
+-    <div className="app-shell relative min-h-screen overflow-hidden px-4 py-6 sm:px-6 lg:px-10">
++    <div className="app-shell isolate-layer relative min-h-screen overflow-hidden px-4 py-6 sm:px-6 lg:px-10">
+       <div className="hero-orb left-[-120px] top-16 h-72 w-72 bg-indigo-500/40" />
+@@ -54,3 +54,3 @@ export default function UploadPage() {
+       <div className="mx-auto flex min-h-[calc(100vh-3rem)] max-w-7xl flex-col gap-8">
+-        <header className="flex items-center justify-between rounded-full border border-white/10 bg-white/6 px-5 py-4 backdrop-blur-xl">
++        <header className="flex items-center justify-between rounded-full border border-white/10 bg-white/6 px-5 py-4">
+           <div>
+@@ -133,3 +133,3 @@ export default function UploadPage() {
+                   <textarea
+-                    className="h-40 w-full rounded-[24px] border border-white/12 bg-slate-950/30 px-5 py-4 text-sm leading-7 text-slate-100 outline-none transition-all duration-300 placeholder:text-slate-500 focus:border-indigo-300/40 focus:bg-slate-950/45 focus:ring-4 focus:ring-indigo-400/10"
++                    className="h-40 w-full rounded-[24px] border border-white/12 bg-slate-950/30 px-5 py-4 text-sm leading-7 text-slate-100 outline-none transition-all will-change-transform duration-300 placeholder:text-slate-500 focus:border-indigo-300/40 focus:bg-slate-950/45 focus:ring-4 focus:ring-indigo-400/10"
+                     placeholder="Paste the job requirements here..."
+@@ -198,3 +198,3 @@ function FeatureCard({ title, description }) {
+   return (
+-    <div className="rounded-[24px] border border-white/10 bg-slate-950/25 p-5 transition-transform duration-300 hover:-translate-y-1 hover:bg-slate-950/35">
++    <div className="rounded-[24px] border border-white/10 bg-slate-950/25 p-5 transition-transform will-change-transform duration-300 hover:-translate-y-1 hover:bg-slate-950/35">
+       <p className="text-sm font-semibold text-slate-100">{title}</p>

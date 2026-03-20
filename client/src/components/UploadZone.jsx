@@ -16,24 +16,24 @@ export default function UploadZone({ type, onFile, file }) {
 
   if (file) {
     return (
-      <div className="relative overflow-hidden rounded-[28px] border border-white/15 bg-white/8 p-5 shadow-[0_20px_50px_rgba(2,6,23,0.32)] backdrop-blur-xl">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(109,125,255,0.18),transparent_38%)]" />
-        <div className="relative flex items-start gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-slate-950/40 text-sm font-bold text-indigo-100">
-            {isResume ? 'CV' : 'JD'}
+      <div className="group relative flex items-center justify-between rounded-xl border border-indigo-500/30 bg-indigo-500/5 p-4 transition-all hover:bg-indigo-500/10 hover:border-indigo-500/40">
+        <div className="flex items-center gap-4">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#0a0c10] border border-white/10 text-indigo-400 shadow-[0_2px_8px_rgba(0,0,0,0.4)]">
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
           </div>
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-semibold text-slate-100">{file.name}</p>
-            <p className="mt-1 text-xs text-slate-400">
-              {(file.size / 1024).toFixed(1)} KB uploaded successfully
+          <div className="min-w-0 pr-4">
+            <p className="truncate text-sm font-semibold text-slate-200">{file.name}</p>
+            <p className="mt-1 text-xs text-indigo-300">
+              {(file.size / 1024).toFixed(1)} KB • Ready for analysis
             </p>
           </div>
         </div>
         <button
           onClick={() => onFile(null)}
-          className="absolute right-4 top-4 rounded-full border border-white/10 bg-white/6 px-2.5 py-1 text-sm font-semibold text-slate-300 transition-colors hover:bg-white/12 hover:text-white"
+          className="shrink-0 rounded-lg p-2 text-slate-400 hover:bg-white/5 hover:text-white transition-colors"
+          title="Remove file"
         >
-          Remove
+          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
         </button>
       </div>
     );
@@ -42,31 +42,24 @@ export default function UploadZone({ type, onFile, file }) {
   return (
     <div
       {...getRootProps()}
-      className={`group relative overflow-hidden rounded-[28px] border p-6 text-left transition-all duration-300 ${
+      className={`group relative flex cursor-pointer flex-col items-center justify-center overflow-hidden rounded-xl border-2 border-dashed p-8 text-center transition-all duration-300 ${
         isDragActive
-          ? 'border-indigo-300/60 bg-indigo-400/10 shadow-[0_18px_50px_rgba(99,102,241,0.2)]'
-          : 'border-white/12 bg-white/6 hover:border-white/22 hover:bg-white/8'
+          ? 'border-indigo-500 bg-indigo-500/10 scale-[1.01]'
+          : 'border-white/10 bg-[#0a0c10]/50 hover:border-indigo-500/40 hover:bg-indigo-500/5 hover:scale-[1.01]'
       }`}
     >
       <input {...getInputProps()} />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(109,125,255,0.18),transparent_34%)] opacity-90" />
-      <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-start gap-4">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-slate-950/35 text-lg font-bold text-indigo-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-            {isResume ? 'R' : 'J'}
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-slate-100">
-              {isResume ? 'Upload resume' : 'Upload job description'}
-            </p>
-            <p className="mt-1 text-sm text-slate-400">
-              {isResume ? 'PDF or DOCX, parsed directly into skills.' : 'Drop a file or switch to pasted text for faster analysis.'}
-            </p>
-          </div>
-        </div>
-        <div className="rounded-full border border-white/12 bg-white/6 px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-slate-300 transition-transform duration-300 group-hover:-translate-y-0.5">
-          {isDragActive ? 'Release to upload' : 'Browse file'}
-        </div>
+      <div className={`mb-4 flex h-12 w-12 items-center justify-center rounded-full transition-colors duration-300 ${isDragActive ? 'bg-indigo-500/20 text-indigo-400' : 'bg-white/5 text-slate-400 group-hover:bg-indigo-500/20 group-hover:text-indigo-400'}`}>
+        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+      </div>
+      <p className="text-sm font-semibold text-white">
+        {isResume ? 'Upload candidate resume' : 'Upload job description'}
+      </p>
+      <p className="mt-1.5 text-xs text-slate-400 max-w-[200px] leading-relaxed">
+        Drag and drop your file here, or click to browse
+      </p>
+      <div className="mt-5 rounded-full border border-white/5 bg-white/5 px-3 py-1 text-[10px] font-medium tracking-wider text-slate-400 uppercase">
+        PDF or DOCX max 5MB
       </div>
     </div>
   );

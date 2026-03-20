@@ -1,4 +1,5 @@
-import ReactFlow, { Background, Controls, MiniMap } from 'reactflow';
+import React, { useState } from 'react';
+import ReactFlow, { Background, Controls, MiniMap, getBezierPath } from 'reactflow';
 import dagre from '@dagrejs/dagre';
 import CourseNode from './CourseNode';
 import 'reactflow/dist/style.css';
@@ -25,13 +26,72 @@ const getLayoutedElements = (nodes, edges) => {
   };
 };
 
+const FlowingEdge = ({ id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition }) => {
+  const [edgePath] = getBezierPath({ sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition });
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <>
+      <path
+        id={`edge-path-${id}`}
+        d={edgePath}
+        fill="none"
+        stroke={isHovered ? "rgba(79,142,247,0.6)" : "rgba(99,102,241,0.25)"}
+        strokeWidth={isHovered ? 2 : 1.5}
+        strokeDasharray="none"
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        markerEnd="url(#flowArrow)"
+        style={{
+          transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+          willChange: "stroke, stroke-width"
+        }}
+      />
+      <path
+        d={edgePath}
+        fill="none"
+        stroke="transparent"
+        strokeWidth={15}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      />
+      <circle r="2.5" fill="#4f8ef7" opacity="0.8">
+        <animateMotion dur="2s" repeatCount="indefinite">
+          <mpath href={`#edge-path-${id}`} />
+        </animateMotion>
+      </circle>
+    </>
+  );
+};
+
 const nodeTypes = { courseNode: CourseNode };
+const edgeTypes = { flowingEdge: FlowingEdge };
+
 const phaseTheme = {
   1: 'Foundation',
   2: 'Core Competency',
   3: 'Specialization',
   4: 'Stretch Goals',
 };
+
+function InfoPill({ label, value }) {
+  return (
+    <div style={{
+      background: "rgba(255,255,255,0.04)",
+      border: "1px solid rgba(255,255,255,0.08)",
+      borderRadius: "999px",
+      padding: "6px 14px",
+      fontSize: "13px",
+      color: "#9ca3af",
+      fontWeight: 400
+    }}>
+      {label}
+      <span style={{ color: "#f0f2f5", fontWeight: 600, fontFamily: "'DM Mono', monospace", marginLeft: "6px" }}>
+        {value}
+      </span>
+    </div>
+  );
+}
 
 export default function PathwayFlow({ pathway, onNodeClick }) {
   if (!pathway?.phases || pathway.phases.length === 0) {
@@ -61,18 +121,28 @@ export default function PathwayFlow({ pathway, onNodeClick }) {
         id: `${prereqId}-${course.id}`,
         source: prereqId,
         target: course.id,
-        animated: true,
-        type: 'smoothstep',
+        animated: false,
+        type: 'flowingEdge',
       }))
     )
   );
 
-  const { nodes, edges } = getLayoutedElements(rawNodes, rawEdges);
+  const nodeIds = new Set(rawNodes.map(n => n.id));
+  const validEdges = rawEdges.filter(edge => nodeIds.has(edge.source) && nodeIds.has(edge.target));
+
+  const { nodes, edges } = getLayoutedElements(rawNodes, validEdges);
   const totalCourses = pathway.phases.reduce((sum, phase) => sum + phase.courses.length, 0);
 
   return (
-    <div className="relative h-full w-full overflow-hidden rounded-[32px] border border-white/10 bg-slate-950/35 shadow-[0_30px_80px_rgba(2,6,23,0.45)]">
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex flex-wrap items-center justify-between gap-3 border-b border-white/10 bg-slate-950/55 px-5 py-4 backdrop-blur-xl">
+    <div 
+      className="relative h-full w-full overflow-hidden shadow-2xl"
+      style={{
+        background: "#0a0c10",
+        borderRadius: "16px",
+        border: "1px solid rgba(255,255,255,0.06)"
+      }}
+    >
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex flex-wrap items-center justify-between gap-3 border-b border-[#ffffff0e] px-5 py-4" style={{ background: "rgba(10, 12, 16, 0.55)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }}>
         <div>
           <p className="text-[11px] uppercase tracking-[0.28em] text-slate-400">Learning graph</p>
           <h2 className="mt-1 text-lg font-semibold text-slate-50">Adaptive course pathway</h2>
@@ -84,22 +154,25 @@ export default function PathwayFlow({ pathway, onNodeClick }) {
         </div>
       </div>
 
-      <div className="absolute left-5 top-24 z-10 hidden max-w-xs rounded-2xl border border-white/10 bg-slate-950/55 p-4 text-xs text-slate-300 backdrop-blur-xl xl:block">
+      <div className="absolute left-5 top-24 z-10 hidden max-w-xs rounded-2xl border border-white/10 bg-slate-950/55 p-4 text-xs text-slate-300 xl:block" style={{ backdropFilter: "blur(8px)" }}>
         <p className="font-semibold uppercase tracking-[0.22em] text-slate-400">How to read</p>
         <p className="mt-2 leading-6 text-slate-300">
           Courses are ordered by prerequisite dependencies and weighted priority. Click any card to inspect its recommendation score and prerequisite chain.
         </p>
       </div>
 
+      <svg style={{ position: 'absolute', top: 0, left: 0, width: 0, height: 0 }}>
+        <defs>
+          <marker id="flowArrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L8,3 z" fill="rgba(99,102,241,0.5)"/>
+          </marker>
+        </defs>
+      </svg>
       <ReactFlow
         nodes={nodes}
-        edges={edges.map((edge) => ({
-          ...edge,
-          type: 'smoothstep',
-          animated: true,
-          style: { stroke: 'rgba(148,163,184,0.65)', strokeWidth: 2 },
-        }))}
+        edges={edges}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         fitView
         fitViewOptions={{ padding: 0.2 }}
         minZoom={0.35}
@@ -108,28 +181,57 @@ export default function PathwayFlow({ pathway, onNodeClick }) {
         panOnScroll
         selectionOnDrag={false}
         onNodeClick={(_, node) => onNodeClick(node.id)}
+        connectionLineStyle={{ stroke: "#4f8ef7", strokeWidth: 1.5 }}
+        defaultEdgeOptions={{ type: "flowingEdge", animated: false }}
       >
-        <Background variant="dots" gap={18} size={1.2} color="rgba(148, 163, 184, 0.18)" />
-        <Controls showInteractive={false} />
-        <MiniMap className="hidden sm:block" nodeColor={() => '#7c8cff'} maskColor="rgba(2,6,23,0.55)" />
+        <Background variant="dots" gap={24} size={1} color="rgba(255,255,255,0.06)" />
+        
+        <Controls 
+          showInteractive={false} 
+          style={{
+            background: "rgba(17,19,24,0.9)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            borderRadius: "10px",
+            backdropFilter: "blur(8px)",
+            boxShadow: "0 4px 16px rgba(0,0,0,0.3)"
+          }}
+        />
+
+        <MiniMap 
+          className="hidden sm:block"
+          nodeColor={(node) => {
+            const phase = node.data?.phase_num || 1;
+            if (phase === 1) return "rgba(79,142,247,0.6)";
+            if (phase === 2) return "rgba(167,139,250,0.6)";
+            if (phase === 3) return "rgba(245,158,11,0.6)";
+            return "rgba(16,185,129,0.6)";
+          }}
+          maskColor="rgba(0,0,0,0.6)"
+          style={{
+            background: "rgba(17,19,24,0.9)",
+            border: "1px solid rgba(255,255,255,0.08)",
+            borderRadius: "12px",
+            backdropFilter: "blur(8px)",
+          }}
+          nodeStrokeWidth={0}
+          pannable
+          zoomable
+        />
       </ReactFlow>
 
-      <div className="pointer-events-none absolute bottom-5 left-5 z-10 flex flex-wrap gap-2">
+      <div className="pointer-events-none absolute bottom-5 left-[70px] z-10 flex flex-wrap gap-2">
         {pathway.phases.map((phase) => (
-          <span key={phase.phase} className="rounded-full border border-white/10 bg-slate-950/50 px-3 py-1.5 text-xs font-semibold text-slate-200 backdrop-blur-xl">
+          <span key={phase.phase} 
+            style={{ 
+              background: "rgba(255,255,255,0.04)", 
+              border: "1px solid rgba(255,255,255,0.08)", 
+              backdropFilter: "blur(8px)" 
+            }} 
+            className="rounded-full px-3 py-1.5 text-xs font-semibold text-slate-200">
             {phaseTheme[phase.phase] || phase.phase_label}
           </span>
         ))}
       </div>
-    </div>
-  );
-}
-
-function InfoPill({ label, value }) {
-  return (
-    <div className="rounded-full border border-white/10 bg-white/6 px-3 py-1.5 text-xs font-semibold text-slate-100">
-      <span className="mr-2 text-slate-400">{label}</span>
-      <span>{value}</span>
     </div>
   );
 }

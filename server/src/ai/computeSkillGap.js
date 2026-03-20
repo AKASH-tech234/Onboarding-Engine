@@ -1,69 +1,51 @@
-const { levelToNum } = require("../utils/levelToNum");
+const { levelToNum } = require('../utils/levelToNum')
 
 function computeSkillGap(extractedSkills, requiredSkills) {
-  const safeExtractedSkills = Array.isArray(extractedSkills) ? extractedSkills : [];
-  const safeRequiredSkills = Array.isArray(requiredSkills) ? requiredSkills : [];
+  const gaps = []
+  const missing = []
+  const alreadyMet = []
 
-  const gaps = [];
-  const missing = [];
-  const alreadyMet = [];
+  for (const req of requiredSkills) {
+    const current = extractedSkills.find(s => s.normalized_id === req.normalized_id)
 
-  for (const requirement of safeRequiredSkills) {
-    const targetNum = levelToNum(requirement.level);
-    const currentSkill = safeExtractedSkills.find(
-      (skill) => skill.normalized_id === requirement.normalized_id
-    );
-
-    if (!currentSkill) {
+    if (!current) {
       missing.push({
-        skill: requirement.name,
-        skill_id: requirement.normalized_id,
+        skill: req.name,
+        skill_id: req.normalized_id,
         current: null,
         current_num: 0,
-        target: requirement.level,
-        target_num: targetNum,
-        gap_size: targetNum,
-        required: Boolean(requirement.required),
-      });
-
-      continue;
-    }
-
-    const currentNum = levelToNum(currentSkill.level);
-
-    if (currentNum < targetNum) {
+        target: req.level,
+        target_num: levelToNum(req.level),
+        gap_size: levelToNum(req.level),
+        required: req.required
+      })
+    } else if (levelToNum(current.level) < levelToNum(req.level)) {
       gaps.push({
-        skill: requirement.name,
-        skill_id: requirement.normalized_id,
-        current: currentSkill.level,
-        current_num: currentNum,
-        target: requirement.level,
-        target_num: targetNum,
-        gap_size: targetNum - currentNum,
-        required: Boolean(requirement.required),
-      });
-
-      continue;
+        skill: req.name,
+        skill_id: req.normalized_id,
+        current: current.level,
+        current_num: levelToNum(current.level),
+        target: req.level,
+        target_num: levelToNum(req.level),
+        gap_size: levelToNum(req.level) - levelToNum(current.level),
+        required: req.required
+      })
+    } else {
+      alreadyMet.push({
+        skill: req.name,
+        current: current.level,
+        target: req.level
+      })
     }
-
-    alreadyMet.push({
-      skill: requirement.name,
-      current: currentSkill.level,
-      target: requirement.level,
-    });
   }
-
-  const criticalGaps = [...gaps, ...missing].filter((gap) => gap.required).length;
 
   return {
     gaps,
     missing,
     alreadyMet,
     total_gaps: gaps.length + missing.length,
-    critical_gaps: criticalGaps,
-  };
+    critical_gaps: [...gaps, ...missing].filter(g => g.required).length
+  }
 }
 
-module.exports = {
-  computeSkillGap,
-};
+module.exports = { computeSkillGap }

@@ -1,13 +1,14 @@
-const pdfParse = require('pdf-parse')
 const mammoth = require('mammoth')
 
 async function extractText({ buffer, mimetype }) {
   let text = ''
 
-  if (mimetype === 'application/pdf') {
-    const result = await pdfParse(buffer)
-    text = result.text
-  } else if (mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+ if (mimetype === 'application/pdf') {
+  const { PDFParse } = require('pdf-parse')
+  const parser = new PDFParse({ verbosity: 0, data: buffer })
+  const result = await parser.getText()
+  text = result.text
+} else if (mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
     const result = await mammoth.extractRawText({ buffer })
     text = result.value
   } else {

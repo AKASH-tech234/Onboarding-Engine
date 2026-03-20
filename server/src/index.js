@@ -1,14 +1,8 @@
 const path = require('path')
 const express = require('express')
 const cors = require('cors')
-const multer = require('multer')
 
 const app = express()
-
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 10 * 1024 * 1024 }
-})
 
 function loadRoute(modulePath) {
   try {
@@ -47,4 +41,4 @@ if (require.main === module) {
   app.listen(port, () => console.log('Server running on port', port))
 }
 
-module.exports = { app, upload }
+module.exports = { app }

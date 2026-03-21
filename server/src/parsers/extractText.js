@@ -29,10 +29,30 @@ function looksLikeZip(buffer) {
 }
 
 async function extractPdfText(buffer) {
-  const { PDFParse } = require('pdf-parse')
-  const parser = new PDFParse({ verbosity: 0, data: buffer })
-  const result = await parser.getText()
-  return result.text
+  const pdfParseModule = require('pdf-parse')
+
+  if (typeof pdfParseModule === 'function') {
+    const result = await pdfParseModule(buffer)
+    return result.text
+  }
+
+  if (typeof pdfParseModule.default === 'function') {
+    const result = await pdfParseModule.default(buffer)
+    return result.text
+  }
+
+  if (pdfParseModule.PDFParse) {
+    const parser = new pdfParseModule.PDFParse({ verbosity: 0, data: buffer })
+
+    try {
+      const result = await parser.getText()
+      return result.text
+    } finally {
+      await parser.destroy()
+    }
+  }
+
+  throw new Error('PDF_PARSE_UNAVAILABLE')
 }
 
 async function extractDocxText(buffer) {

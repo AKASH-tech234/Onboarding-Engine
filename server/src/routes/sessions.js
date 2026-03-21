@@ -30,20 +30,32 @@ router.post('/analyze', upload.fields([{ name: 'resume', maxCount: 1 }, { name: 
 
     let resumeText, jdText
     try {
-      const result = await extractText({ buffer: req.files.resume[0].buffer, mimetype: req.files.resume[0].mimetype })
+      const result = await extractText({
+        buffer: req.files.resume[0].buffer,
+        mimetype: req.files.resume[0].mimetype,
+        originalname: req.files.resume[0].originalname
+      })
       resumeText = result.text
     } catch (e) {
-      return sendError(e.message === 'SCANNED_PDF' ? 'Resume is too short or does not appear to be a real resume. Please upload a proper resume PDF.' : 'Resume format not supported.')
+      return sendError(e.message === 'SCANNED_PDF'
+        ? 'Resume text could not be read clearly. Please upload a text-based PDF or DOCX resume.'
+        : 'Resume format not supported. Please upload a PDF or DOCX file.')
     }
 
     if (req.body.jd_text) {
       jdText = req.body.jd_text
     } else {
       try {
-        const result = await extractText({ buffer: req.files.jd[0].buffer, mimetype: req.files.jd[0].mimetype })
+        const result = await extractText({
+          buffer: req.files.jd[0].buffer,
+          mimetype: req.files.jd[0].mimetype,
+          originalname: req.files.jd[0].originalname
+        })
         jdText = result.text
       } catch (e) {
-        return sendError(e.message === 'SCANNED_PDF' ? 'Job description appears to be a scanned image. Please upload a text-based PDF.' : 'Unsupported format for JD.')
+        return sendError(e.message === 'SCANNED_PDF'
+          ? 'Job description text could not be read clearly. Please upload a text-based PDF or DOCX file.'
+          : 'Unsupported format for job description. Please upload a PDF or DOCX file.')
       }
     }
 

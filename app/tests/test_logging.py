@@ -2,6 +2,7 @@ import io
 import logging
 from contextlib import contextmanager
 
+import pipeline.resume_pipeline as resume_pipeline
 from pipeline.resume_pipeline import run_pipeline
 
 
@@ -80,3 +81,29 @@ def test_pipeline_logs_llm_failure_path() -> None:
         or "parse failed" in logs
         or "LLM output rejected" in logs
     )
+
+
+def test_pipeline_logs_pathway_reason_code_on_failure(monkeypatch) -> None:
+    sample = {
+        "skills": ["python"],
+        "projects": [],
+        "experience": [],
+    }
+    jd = {
+        "skills": ["machine learning"],
+        "projects": [],
+        "experience": [],
+    }
+
+    def _raise_pathway_failure(**_kwargs):
+        raise ValueError("cycle_detected: synthetic")
+
+    monkeypatch.setattr(resume_pipeline, "build_pathway", _raise_pathway_failure)
+
+    with _capture_named_logs(["pipeline"]) as stream:
+        result = run_pipeline(sample, jd_data=jd, include_pathway=True)
+        logs = stream.getvalue()
+
+    assert "pathway" in result
+    assert result["pathway"]["meta"]["reason_code"] == "cycle_detected"
+    assert "reason_code=cycle_detected" in logs

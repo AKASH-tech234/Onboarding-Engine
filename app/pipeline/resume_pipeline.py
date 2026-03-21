@@ -14,10 +14,61 @@ from modules.services.llm.llm_services import (
     LLM_STATUS_PARTIAL_ACCEPTED,
     extract_project_info,
 )
+from modules.pathway.pathway_builder import build_pathway
+from modules.pathway.response_builder import build_pathway_response
 from utils.logger import get_logger
 
 
 logger = get_logger("pipeline")
+
+
+def _reason_code_from_error(err: Exception) -> str:
+    message = str(err or "").strip()
+    if not message:
+        return "pathway_unavailable"
+    if ":" in message:
+        candidate = message.split(":", 1)[0].strip().lower().replace(" ", "_")
+        if candidate:
+            return candidate
+    return "pathway_unavailable"
+
+
+def _extract_normalized_profile_skill_names(profile: dict) -> set[str]:
+    names: set[str] = set()
+    if not isinstance(profile, dict):
+        return names
+
+    skills = profile.get("skills", [])
+    if not isinstance(skills, list):
+        return names
+
+    for item in skills:
+        if not isinstance(item, dict):
+            continue
+        raw_name = item.get("name", "")
+        if not isinstance(raw_name, str):
+            continue
+        normalized = raw_name.strip().lower()
+        if normalized:
+            names.add(normalized)
+    return names
+
+
+def _derive_pathway_inputs(candidate_response: dict, requirement_response: dict) -> tuple[set[str], list[str]]:
+    candidate_profile = candidate_response.get("candidate_profile", {}) if isinstance(candidate_response, dict) else {}
+    requirement_profile = requirement_response.get("requirement_profile", {}) if isinstance(requirement_response, dict) else {}
+
+    candidate_names = _extract_normalized_profile_skill_names(candidate_profile)
+    required_names = sorted(_extract_normalized_profile_skill_names(requirement_profile))
+    missing = [name for name in required_names if name not in candidate_names]
+
+    logger.debug(
+        "Derived pathway inputs from parsed profiles: candidate=%d required=%d missing=%d",
+        len(candidate_names),
+        len(required_names),
+        len(missing),
+    )
+    return candidate_names, missing
 
 
 def _is_debug_enabled(data: dict) -> bool:
@@ -159,10 +210,21 @@ def _run_skill_flow(data: dict, use_llm: bool) -> dict:
     return explained
 
 
-def run_pipeline(data, jd_data: dict | None = None):
+def run_pipeline(
+    data,
+    jd_data: dict | None = None,
+    include_pathway: bool = False,
+    pathway_phase_size: int = 3,
+    scoring_profile: str = "default",
+):
     logger.info("Starting pipeline")
 
     try:
+        if pathway_phase_size <= 0:
+            raise ValueError("pathway_phase_size must be greater than zero")
+        if not isinstance(scoring_profile, str) or scoring_profile.strip() == "":
+            raise ValueError("scoring_profile must be a non-empty string")
+
         candidate_skills = _run_skill_flow(data, use_llm=True)
 
         candidate_response = build_response(candidate_skills)
@@ -187,6 +249,34 @@ def run_pipeline(data, jd_data: dict | None = None):
                 "required_total_skills": requirement_response["meta"]["required_total_skills"],
             },
         }
+
+        if include_pathway:
+            candidate_names, missing = _derive_pathway_inputs(
+                candidate_response,
+                requirement_response,
+            )
+
+            try:
+                pathway = build_pathway(
+                    missing_skills=missing,
+                    candidate_skills=candidate_names,
+                    phase_size=pathway_phase_size,
+                )
+            except ValueError as err:
+                reason_code = _reason_code_from_error(err)
+                logger.warning("Pathway generation failed; reason_code=%s error=%s", reason_code, err)
+                pathway = {
+                    "ordered": [],
+                    "phases": [],
+                    "meta": {
+                        "total_items": 0,
+                        "total_phases": 0,
+                        "reason_code": reason_code,
+                    },
+                }
+
+            combined_response["pathway"] = build_pathway_response(pathway)
+
         logger.debug("Final response: %s", combined_response)
         return combined_response
     except Exception as e:

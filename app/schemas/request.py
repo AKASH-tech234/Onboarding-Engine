@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class StrictModel(BaseModel):
@@ -103,9 +103,24 @@ class JobDescriptionInput(StrictModel):
     benefits: list[str]
 
 
+class ParseOptions(StrictModel):
+    include_pathway: bool = False
+    pathway_phase_size: int = Field(default=3, ge=1, le=50)
+    scoring_profile: str = Field(default="default", min_length=1, max_length=64)
+
+    @field_validator("scoring_profile")
+    @classmethod
+    def _validate_scoring_profile(cls, value: str) -> str:
+        normalized = value.strip()
+        if normalized == "":
+            raise ValueError("scoring_profile must be a non-empty string")
+        return normalized
+
+
 class ParseRequest(StrictModel):
     resume: ResumeInput
     jd: JobDescriptionInput
+    options: ParseOptions | None = None
 
 
 def resume_to_pipeline_input(resume: ResumeInput) -> dict:

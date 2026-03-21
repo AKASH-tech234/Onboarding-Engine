@@ -1,5 +1,17 @@
 # Resume Parsing Engine App
 
+## Server startup (important)
+
+This app must run with Python 3.12 from `app/.venv312`.
+
+Do not run `uvicorn` from a Python 3.14 environment because FastAPI/Pydantic v1 in this project is not compatible with Python 3.14.
+
+Use one of these commands from `Onboarding-Engine/app`:
+
+1. `./start_server.ps1`
+2. `./start_server.ps1 -NoReload`
+3. `./.venv312/Scripts/python.exe -m uvicorn --app-dir . main:app --reload`
+
 ## Scope of this README
 
 This document describes only what currently exists in the app codebase and what has been implemented so far.

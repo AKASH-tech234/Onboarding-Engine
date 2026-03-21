@@ -1,0 +1,17 @@
+{
+  "version": "v1",
+  "nodes": [
+    { "id": "python", "label": "Python" },
+    { "id": "sql", "label": "SQL" },
+    { "id": "statistics", "label": "Statistics" },
+    { "id": "machine learning", "label": "Machine Learning" },
+    { "id": "deep learning", "label": "Deep Learning" }
+  ],
+  "edges": [
+    { "from": "python", "to": "machine learning" },
+    { "from": "statistics", "to": "machine learning" },
+    { "from": "machine learning", "to": "deep learning" },
+    { "from": "python", "to": "deep learning" },
+    { "from": "sql", "to": "machine learning" }
+  ]
+}

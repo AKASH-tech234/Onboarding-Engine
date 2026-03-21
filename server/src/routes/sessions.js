@@ -7,7 +7,7 @@ const { normalizeSkills } = require('../ai/normalizeSkills.js');
 const { computeSkillGap } = require('../ai/computeSkillGap.js');
 const { adaptivePathway } = require('../ai/adaptivePathway.js');
 const { generateReasoningTrace } = require('../ai/generateReasoningTrace.js');
-const { supabase } = require('../db/supabaseClient.js');
+const supabase = require('../db/supabaseClient.js');
 
 const router = express.Router();
 

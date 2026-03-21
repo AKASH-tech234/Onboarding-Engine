@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import client from '../api/client';
 import { mockData } from '../mockData';
 
-const USE_MOCK = true;
+const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
 const DEMO_IDS = { tech: 'FILL_AFTER_DEPLOY', ops: 'FILL_AFTER_DEPLOY' };
 
 export function useSession(id) {

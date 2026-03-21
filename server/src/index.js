@@ -39,7 +39,7 @@ app.use((err, req, res, next) => {
 })
 
 if (require.main === module) {
-  const port = process.env.PORT || 3001
+  const port = process.env.PORT || 8080
   app.listen(port, () => console.log('Server running on port', port))
 }
 

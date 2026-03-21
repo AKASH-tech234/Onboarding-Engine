@@ -7,7 +7,7 @@
     "test": "node src/tests/runTests.js",
     "seed": "node src/scripts/seedCatalog.js",
     "dev": "nodemon src/index.js",
-  "start": "node src/index.js"
+    "start": "node src/index.js"
   },
   "keywords": [],
   "author": "",
@@ -17,7 +17,7 @@
     "@google-ai/generativelanguage": "^3.7.0",
     "@google/generative-ai": "^0.21.0",
     "@supabase/supabase-js": "^2.99.3",
-    "cors": "^2.8.6",
+    "cors": "^2.8.5",
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "google-auth-library": "^10.6.2",

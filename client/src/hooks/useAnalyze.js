@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { getApiBaseUrl } from '../config/api';
 
 export function useAnalyze() {
   const [isLoading, setIsLoading] = useState(false);
@@ -18,7 +19,7 @@ export function useAnalyze() {
       if (jdFile) formData.append('jd', jdFile);
       else if (jdText) formData.append('jd_text', jdText);
 
-      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1';
+      const baseUrl = getApiBaseUrl();
       
       const response = await fetch(`${baseUrl}/sessions/analyze`, {
         method: 'POST',

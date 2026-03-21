@@ -45,24 +45,34 @@ async function extractText({ buffer, mimetype, originalname }) {
   const extension = getFileExtension(originalname)
   let text = ''
   let parsed = false
+  let recognizedFormat = false
 
   if (PDF_MIME_TYPES.has(normalizedMimetype) || extension === '.pdf' || looksLikePdf(buffer)) {
+    recognizedFormat = true
     try {
       text = await extractPdfText(buffer)
       parsed = true
     } catch (error) {
       if (extension !== '.docx' && !looksLikeZip(buffer)) {
-        throw error
+        throw new Error('TEXT_EXTRACTION_FAILED')
       }
     }
   }
 
   if (!parsed && (DOCX_MIME_TYPES.has(normalizedMimetype) || extension === '.docx' || looksLikeZip(buffer))) {
-    text = await extractDocxText(buffer)
-    parsed = true
+    recognizedFormat = true
+    try {
+      text = await extractDocxText(buffer)
+      parsed = true
+    } catch (error) {
+      throw new Error('TEXT_EXTRACTION_FAILED')
+    }
   }
 
   if (!parsed) {
+    if (recognizedFormat) {
+      throw new Error('TEXT_EXTRACTION_FAILED')
+    }
     throw new Error('UNSUPPORTED_FORMAT')
   }
 

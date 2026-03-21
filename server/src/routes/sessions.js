@@ -37,9 +37,16 @@ router.post('/analyze', upload.fields([{ name: 'resume', maxCount: 1 }, { name: 
       })
       resumeText = result.text
     } catch (e) {
+      console.error('Resume parse failed:', {
+        name: req.files.resume[0].originalname,
+        mimetype: req.files.resume[0].mimetype,
+        error: e.message
+      })
       return sendError(e.message === 'SCANNED_PDF'
         ? 'Resume text could not be read clearly. Please upload a text-based PDF or DOCX resume.'
-        : 'Resume format not supported. Please upload a PDF or DOCX file.')
+        : e.message === 'TEXT_EXTRACTION_FAILED'
+          ? 'We recognized the resume file, but could not read its text. Please try a different PDF or export it as DOCX.'
+          : 'Resume format not supported. Please upload a PDF or DOCX file.')
     }
 
     if (req.body.jd_text) {
@@ -53,9 +60,16 @@ router.post('/analyze', upload.fields([{ name: 'resume', maxCount: 1 }, { name: 
         })
         jdText = result.text
       } catch (e) {
+        console.error('JD parse failed:', {
+          name: req.files.jd[0].originalname,
+          mimetype: req.files.jd[0].mimetype,
+          error: e.message
+        })
         return sendError(e.message === 'SCANNED_PDF'
           ? 'Job description text could not be read clearly. Please upload a text-based PDF or DOCX file.'
-          : 'Unsupported format for job description. Please upload a PDF or DOCX file.')
+          : e.message === 'TEXT_EXTRACTION_FAILED'
+            ? 'We recognized the job description file, but could not read its text. Please try a different PDF or export it as DOCX.'
+            : 'Unsupported format for job description. Please upload a PDF or DOCX file.')
       }
     }
 

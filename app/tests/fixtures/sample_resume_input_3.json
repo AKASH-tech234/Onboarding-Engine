@@ -1,0 +1,54 @@
+{
+  "personal_info": {
+    "name": "Neha Kulkarni",
+    "phone": "+91-7777777777",
+    "email": "neha.kulkarni@example.com",
+    "gender": "Female",
+    "date_of_birth": "2001-03-18",
+    "father_name": "Mohan Kulkarni",
+    "permanent_address": "Nagpur, Maharashtra",
+    "contact_address": "Hyderabad, Telangana"
+  },
+  "career_objective": "Build reliable quality systems using automation and strong validation practices across the SDLC.",
+  "education": [
+    {
+      "degree": "B.Sc. Computer Science",
+      "institution": "State University",
+      "year": "2023",
+      "percentage": "82%"
+    }
+  ],
+  "technical_skills": {
+    "programming_languages": ["Python", "TypeScript"],
+    "databases": ["PostgreSQL", "SQLite"],
+    "web_technologies": ["FastAPI", "Node.js", "React"],
+    "technologies": ["Docker", "CI/CD", "GraphQL"],
+    "testing_tools": ["Pytest", "Playwright"],
+    "test_management_tools": ["TestRail", "qTest"],
+    "configuration_tools": ["Git", "GitHub Actions"],
+    "defect_tracking_tools": ["Jira"],
+    "operating_systems": ["Windows", "Ubuntu"]
+  },
+  "training": {
+    "manual_testing": ["STLC", "Regression testing"],
+    "automation_testing": ["Pytest", "Playwright"],
+    "additional_training": ["Security testing fundamentals"],
+    "institute": "Quality First Academy"
+  },
+  "project": {
+    "name": "Candidate Onboarding Portal",
+    "duration": "Feb 2024 - Jul 2024",
+    "role": "Software Test Engineer",
+    "technologies": ["Python", "FastAPI", "Pytest", "React", "Docker"],
+    "description": "Implemented API contract tests and UI end-to-end checks, reduced production defects, and improved test coverage metrics."
+  },
+  "skills": {
+    "personal_skills": ["Communication", "Analytical thinking", "Time management"]
+  },
+  "extra_curricular": ["Technical workshops", "Community volunteering"],
+  "declaration": {
+    "statement": "I hereby confirm the information furnished is true and complete.",
+    "place": "Hyderabad",
+    "date": "2026-03-21"
+  }
+}

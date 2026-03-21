@@ -1,0 +1,192 @@
+﻿{
+    "parsed":  {
+                   "version":  "1.0",
+                   "candidate_profile":  {
+                                             "skills":  [
+                                                            {
+                                                                "name":  "bug lifecycle",
+                                                                "score":  0.41,
+                                                                "level":  "intermediate",
+                                                                "confidence":  0.4,
+                                                                "reasoning":  "listed skill with no practical usage",
+                                                                "evidence":  [
+                                                                                 "training.manual_testing",
+                                                                                 "training"
+                                                                             ]
+                                                            },
+                                                            {
+                                                                "name":  "docker",
+                                                                "score":  0.26,
+                                                                "level":  "beginner",
+                                                                "confidence":  0.4,
+                                                                "reasoning":  "listed skill with no practical usage",
+                                                                "evidence":  [
+                                                                                 "technical_skills.technologies"
+                                                                             ]
+                                                            },
+                                                            {
+                                                                "name":  "fastapi",
+                                                                "score":  0.44,
+                                                                "level":  "intermediate",
+                                                                "confidence":  0.4,
+                                                                "reasoning":  "listed skill with no practical usage",
+                                                                "evidence":  [
+                                                                                 "technical_skills.web_technologies",
+                                                                                 "project.technologies"
+                                                                             ]
+                                                            },
+                                                            {
+                                                                "name":  "git",
+                                                                "score":  0.26,
+                                                                "level":  "beginner",
+                                                                "confidence":  0.4,
+                                                                "reasoning":  "listed skill with no practical usage",
+                                                                "evidence":  [
+                                                                                 "technical_skills.configuration_tools"
+                                                                             ]
+                                                            },
+                                                            {
+                                                                "name":  "github actions",
+                                                                "score":  0.26,
+                                                                "level":  "beginner",
+                                                                "confidence":  0.4,
+                                                                "reasoning":  "listed skill with no practical usage",
+                                                                "evidence":  [
+                                                                                 "technical_skills.configuration_tools"
+                                                                             ]
+                                                            },
+                                                            {
+                                                                "name":  "javascript",
+                                                                "score":  0.26,
+                                                                "level":  "beginner",
+                                                                "confidence":  0.4,
+                                                                "reasoning":  "listed skill with no practical usage",
+                                                                "evidence":  [
+                                                                                 "technical_skills.programming_languages"
+                                                                             ]
+                                                            },
+                                                            {
+                                                                "name":  "jira",
+                                                                "score":  0.26,
+                                                                "level":  "beginner",
+                                                                "confidence":  0.4,
+                                                                "reasoning":  "listed skill with no practical usage",
+                                                                "evidence":  [
+                                                                                 "technical_skills.defect_tracking_tools"
+                                                                             ]
+                                                            },
+                                                            {
+                                                                "name":  "linux",
+                                                                "score":  0.26,
+                                                                "level":  "beginner",
+                                                                "confidence":  0.4,
+                                                                "reasoning":  "listed skill with no practical usage",
+                                                                "evidence":  [
+                                                                                 "technical_skills.operating_systems"
+                                                                             ]
+                                                            },
+                                                            {
+                                                                "name":  "postgresql",
+                                                                "score":  0.26,
+                                                                "level":  "beginner",
+                                                                "confidence":  0.4,
+                                                                "reasoning":  "listed skill with no practical usage",
+                                                                "evidence":  [
+                                                                                 "technical_skills.databases"
+                                                                             ]
+                                                            },
+                                                            {
+                                                                "name":  "pytest",
+                                                                "score":  0.59,
+                                                                "level":  "intermediate",
+                                                                "confidence":  0.4,
+                                                                "reasoning":  "listed skill with no practical usage",
+                                                                "evidence":  [
+                                                                                 "technical_skills.testing_tools",
+                                                                                 "training.automation_testing",
+                                                                                 "project.technologies",
+                                                                                 "training"
+                                                                             ]
+                                                            },
+                                                            {
+                                                                "name":  "python",
+                                                                "score":  0.44,
+                                                                "level":  "intermediate",
+                                                                "confidence":  0.4,
+                                                                "reasoning":  "listed skill with no practical usage",
+                                                                "evidence":  [
+                                                                                 "technical_skills.programming_languages",
+                                                                                 "project.technologies"
+                                                                             ]
+                                                            },
+                                                            {
+                                                                "name":  "react",
+                                                                "score":  0.26,
+                                                                "level":  "beginner",
+                                                                "confidence":  0.4,
+                                                                "reasoning":  "listed skill with no practical usage",
+                                                                "evidence":  [
+                                                                                 "technical_skills.web_technologies"
+                                                                             ]
+                                                            },
+                                                            {
+                                                                "name":  "rest apis",
+                                                                "score":  0.26,
+                                                                "level":  "beginner",
+                                                                "confidence":  0.4,
+                                                                "reasoning":  "listed skill with no practical usage",
+                                                                "evidence":  [
+                                                                                 "technical_skills.technologies"
+                                                                             ]
+                                                            },
+                                                            {
+                                                                "name":  "selenium",
+                                                                "score":  0.59,
+                                                                "level":  "intermediate",
+                                                                "confidence":  0.4,
+                                                                "reasoning":  "listed skill with no practical usage",
+                                                                "evidence":  [
+                                                                                 "technical_skills.testing_tools",
+                                                                                 "training.automation_testing",
+                                                                                 "project.technologies",
+                                                                                 "training"
+                                                                             ]
+                                                            },
+                                                            {
+                                                                "name":  "test case design",
+                                                                "score":  0.41,
+                                                                "level":  "intermediate",
+                                                                "confidence":  0.4,
+                                                                "reasoning":  "listed skill with no practical usage",
+                                                                "evidence":  [
+                                                                                 "training.manual_testing",
+                                                                                 "training"
+                                                                             ]
+                                                            },
+                                                            {
+                                                                "name":  "testrail",
+                                                                "score":  0.26,
+                                                                "level":  "beginner",
+                                                                "confidence":  0.4,
+                                                                "reasoning":  "listed skill with no practical usage",
+                                                                "evidence":  [
+                                                                                 "technical_skills.test_management_tools"
+                                                                             ]
+                                                            },
+                                                            {
+                                                                "name":  "windows",
+                                                                "score":  0.26,
+                                                                "level":  "beginner",
+                                                                "confidence":  0.4,
+                                                                "reasoning":  "listed skill with no practical usage",
+                                                                "evidence":  [
+                                                                                 "technical_skills.operating_systems"
+                                                                             ]
+                                                            }
+                                                        ]
+                                         },
+                   "meta":  {
+                                "total_skills":  17
+                            }
+               }
+}

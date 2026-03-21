@@ -1,0 +1,54 @@
+{
+  "personal_info": {
+    "name": "Asha Sharma",
+    "phone": "+91-9999999999",
+    "email": "asha.sharma@example.com",
+    "gender": "Female",
+    "date_of_birth": "2000-05-10",
+    "father_name": "Ramesh Sharma",
+    "permanent_address": "Jaipur, Rajasthan",
+    "contact_address": "Pune, Maharashtra"
+  },
+  "career_objective": "Build robust QA automation frameworks and improve product quality through scalable testing.",
+  "education": [
+    {
+      "degree": "B.Tech Computer Science",
+      "institution": "ABC Institute of Technology",
+      "year": "2022",
+      "percentage": "8.3 CGPA"
+    }
+  ],
+  "technical_skills": {
+    "programming_languages": ["Python", "JavaScript"],
+    "databases": ["PostgreSQL"],
+    "web_technologies": ["FastAPI", "React"],
+    "technologies": ["REST APIs", "Docker"],
+    "testing_tools": ["Pytest", "Selenium"],
+    "test_management_tools": ["TestRail"],
+    "configuration_tools": ["Git", "GitHub Actions"],
+    "defect_tracking_tools": ["Jira"],
+    "operating_systems": ["Windows", "Linux"]
+  },
+  "training": {
+    "manual_testing": ["Test case design", "Bug lifecycle"],
+    "automation_testing": ["Selenium", "Pytest"],
+    "additional_training": ["API testing with Postman"],
+    "institute": "QA Academy"
+  },
+  "project": {
+    "name": "Resume Intelligence Platform",
+    "duration": "Jan 2024 - Jun 2024",
+    "role": "QA Automation Intern",
+    "technologies": ["Python", "FastAPI", "Pytest", "Selenium"],
+    "description": "Built automated tests for resume parsing APIs and UI workflows; validated JSON outputs and reduced regression defects."
+  },
+  "skills": {
+    "personal_skills": ["Communication", "Teamwork", "Problem Solving"]
+  },
+  "extra_curricular": ["Hackathon participant", "Technical blog writing"],
+  "declaration": {
+    "statement": "I hereby declare that the above information is true to the best of my knowledge.",
+    "place": "Pune",
+    "date": "2026-03-21"
+  }
+}

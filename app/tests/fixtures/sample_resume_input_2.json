@@ -1,0 +1,54 @@
+{
+  "personal_info": {
+    "name": "Rohit Verma",
+    "phone": "+91-8888888888",
+    "email": "rohit.verma@example.com",
+    "gender": "Male",
+    "date_of_birth": "1999-11-02",
+    "father_name": "Suresh Verma",
+    "permanent_address": "Indore, Madhya Pradesh",
+    "contact_address": "Bengaluru, Karnataka"
+  },
+  "career_objective": "Grow as a QA engineer focused on API and automation testing for scalable web systems.",
+  "education": [
+    {
+      "degree": "B.E. Information Technology",
+      "institution": "XYZ Engineering College",
+      "year": "2021",
+      "percentage": "78%"
+    }
+  ],
+  "technical_skills": {
+    "programming_languages": ["Java", "Python"],
+    "databases": ["MySQL", "MongoDB"],
+    "web_technologies": ["Spring Boot", "REST"],
+    "technologies": ["Microservices", "Postman"],
+    "testing_tools": ["JUnit", "Selenium", "Cypress"],
+    "test_management_tools": ["Zephyr"],
+    "configuration_tools": ["Git", "Jenkins"],
+    "defect_tracking_tools": ["Jira", "Bugzilla"],
+    "operating_systems": ["Linux", "Windows"]
+  },
+  "training": {
+    "manual_testing": ["Requirement analysis", "Test scenarios"],
+    "automation_testing": ["Selenium", "Cypress"],
+    "additional_training": ["Performance testing basics"],
+    "institute": "TechQA Lab"
+  },
+  "project": {
+    "name": "Retail Order Management",
+    "duration": "Aug 2023 - Jan 2024",
+    "role": "QA Engineer",
+    "technologies": ["Java", "Spring Boot", "Selenium", "Postman"],
+    "description": "Designed API and UI test suites for order workflows, validated integration points, and improved release stability."
+  },
+  "skills": {
+    "personal_skills": ["Collaboration", "Ownership", "Attention to detail"]
+  },
+  "extra_curricular": ["Open-source contributions", "Mentoring juniors"],
+  "declaration": {
+    "statement": "I declare that all details provided are accurate to the best of my knowledge.",
+    "place": "Bengaluru",
+    "date": "2026-03-21"
+  }
+}

@@ -1,5 +1,19 @@
 # Resume Parsing Engine App
 
+## Unified app note
+
+This app folder now contains both services under one root:
+
+- Resume parsing service remains at [app/main.py](main.py) and keeps POST /parse-resume.
+- Adaptive onboarding service is now under [app/adaptive](adaptive) and is mounted by main API at /adaptive.
+- Adaptive endpoints are available under /adaptive/health and /adaptive/v1/* routes.
+
+### Unified run commands
+
+- API (local): `python -m uvicorn app.main:app --reload`
+- Worker (local): `python -m app.adaptive.workers.worker_main`
+- Docker (from [app/docker-compose.yml](docker-compose.yml)): `docker compose -f app/docker-compose.yml up --build`
+
 ## Scope of this README
 
 This document describes only what currently exists in the app codebase and what has been implemented so far.

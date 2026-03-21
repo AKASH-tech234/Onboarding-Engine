@@ -1,0 +1,18 @@
+services:
+  app-api:
+    build:
+      context: ..
+      dockerfile: app/Dockerfile.api
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=development
+      - GRAPH_VERSION=v1
+
+  app-worker:
+    build:
+      context: ..
+      dockerfile: app/Dockerfile.worker
+    environment:
+      - ENVIRONMENT=development
+      - GRAPH_VERSION=v1

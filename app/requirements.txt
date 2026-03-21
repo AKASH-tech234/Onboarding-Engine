@@ -4,3 +4,4 @@ uvicorn==0.35.0
 pytest==8.3.5
 langchain
 langchain-google-genai
+networkx>=3.3

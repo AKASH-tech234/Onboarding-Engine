@@ -6,11 +6,28 @@ const cors = require('cors')
 
 const app = express()
 
+function normalizeOrigin(value) {
+  return value.replace(/\/+$/, '')
+}
+
 function getAllowedOrigins() {
   return (process.env.CORS_ORIGINS || '')
     .split(',')
     .map((origin) => origin.trim())
     .filter(Boolean)
+    .map(normalizeOrigin)
+}
+
+function originMatches(origin, allowedOrigin) {
+  if (allowedOrigin.includes('*')) {
+    const escaped = allowedOrigin
+      .replace(/[.+?^${}()|[\]\\]/g, '\\$&')
+      .replace(/\*/g, '.*')
+
+    return new RegExp(`^${escaped}$`).test(origin)
+  }
+
+  return origin === allowedOrigin
 }
 
 function buildCorsOptions() {
@@ -22,11 +39,16 @@ function buildCorsOptions() {
         return callback(null, true)
       }
 
-      if (allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+      const normalizedOrigin = normalizeOrigin(origin)
+
+      if (
+        allowedOrigins.length === 0 ||
+        allowedOrigins.some((allowedOrigin) => originMatches(normalizedOrigin, allowedOrigin))
+      ) {
         return callback(null, true)
       }
 
-      return callback(new Error(`CORS blocked for origin: ${origin}`))
+      return callback(new Error(`CORS blocked for origin: ${normalizedOrigin}`))
     },
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-seed-secret'],
